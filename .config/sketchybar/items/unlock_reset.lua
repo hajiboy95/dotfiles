@@ -1,0 +1,5 @@
+SBAR.add("event", "after_unlock", "com.apple.screenIsUnlocked")
+local unlock_handler = SBAR.add("item", { drawing = false })
+unlock_handler:subscribe("after_unlock", function()
+	SBAR.exec("/usr/bin/pkill -9 AeroSpace; /usr/bin/open -a AeroSpace; /opt/homebrew/bin/sketchybar --reload")
+end)

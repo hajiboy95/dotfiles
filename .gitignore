@@ -1,0 +1,19 @@
+# macOS system files
+.DS_Store
+
+# Ignore everything in .config
+.config/*
+.venv/
+**/bin/
+
+# Ignore clipboard storage
+**/.clipboard_storage.json
+
+# Exceptions
+!.config/sketchybar/
+!.config/sketchybar_bash/
+!.config/raycast_scripts/
+!.config/ghostty
+!.config/aerospace_scripts/
+!.config/starship.toml
+!.config/direnv/

@@ -1,0 +1,35 @@
+# Comments and blank lines are allowed
+
+# Version control
+^RCS$
+.+,v
+
+^CVS$
+^\.#.+             # CVS conflict files / Emacs lock files
+^\.cvsignore$
+^\.svn$
+^_darcs$
+^\.hg$
+^\.git$
+^\.gitignore$
+^\.gitmodules$
+
+# Backup / temp / autosave
+.+~                # emacs backup files
+^#.*#$             # emacs autosave files
+^.*\.dmg$
+^.*\.app$
+^\.Trash$
+^.*\.log$
+^.*\.lock$
+^.*\.DS_Store$
+
+# Docs we don't want stowed
+^/README.*
+
+# Local setup scripts
+setup\.sh$
+setup_shared_brew\.sh$
+RectangleConfig\.json$
+.aerospace_rectangle\.toml$
+Brewfile$

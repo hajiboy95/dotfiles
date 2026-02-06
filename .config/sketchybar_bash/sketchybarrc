@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC1091
+
+export PLUGIN_DIR="$CONFIG_DIR/plugins"
+export ITEM_DIR="$CONFIG_DIR/items"
+
+source "$CONFIG_DIR/colors.sh"
+
+source "$CONFIG_DIR/bar.sh"
+source "$CONFIG_DIR/defaults.sh"
+
+# Left, aerospace setup
+while ! aerospace list-workspaces --all > /dev/null 2>&1; do
+    sleep 0.5
+done
+source "$ITEM_DIR/spaces.sh"
+source "$ITEM_DIR/front_app.sh"
+
+# Right
+source "$ITEM_DIR/calendar.sh"
+source "$ITEM_DIR/volume.sh"
+source "$ITEM_DIR/battery.sh"
+source "$ITEM_DIR/cpu.sh"
+# source "$ITEM_DIR/caffeinate.sh"
+# source "$ITEM_DIR/weather.sh"
+# source "$ITEM_DIR/network.sh"
+# source "$ITEM_DIR/wifi.sh"
+# source "$ITEM_DIR/keyboard.sh"
+source "$ITEM_DIR/spotify.sh"
+source "$ITEM_DIR/pomodoro_timer.sh"
+# source "$ITEM_DIR/clipboard.sh"
+
+sketchybar --update

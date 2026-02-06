@@ -1,0 +1,77 @@
+# THIS TOML FILE IS SUPPOSED TO WORK TOGETHER WITH RECTANGLE THEREFORE ALL WINDOWS WILL BE SET TO FLOATING
+# https://nikitabobko.github.io/AeroSpace/commands
+# https://nikitabobko.github.io/AeroSpace/guide
+# https://nikitabobko.github.io/AeroSpace/goodies
+start-at-login = true
+
+after-startup-command = [
+  'exec-and-forget borders active_color=0xffe1e3e4 inactive_color=0xff494d64 width=10.0 hidpi=on'
+]
+
+exec-on-workspace-change = ['/bin/bash', '-c',
+    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+]
+
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+on-focus-changed = ['move-mouse window-lazy-center']
+
+[mode.main.binding]
+    # Let 'focus' work when all windows are floating, only left and right works (next and previous)
+    ctrl-alt-cmd-q = 'aerospace focus --boundaries-action wrap-around-the-workspace left'
+    ctrl-alt-cmd-r = 'aerospace focus --boundaries-action wrap-around-the-workspace right'
+
+    ctrl-alt-cmd-0 = 'workspace 􀖇'
+    ctrl-alt-cmd-1 = 'workspace 1'
+    ctrl-alt-cmd-2 = 'workspace 2'
+    ctrl-alt-cmd-3 = 'workspace 3'
+    ctrl-alt-cmd-4 = 'workspace 4'
+    ctrl-alt-cmd-5 = 'workspace 5'
+#     ctrl-alt-cmd-a = 'workspace A'
+
+    ctrl-alt-cmd-shift-0 = 'exec-and-forget bash -c "move_node.sh 􀖇"'
+    ctrl-alt-cmd-shift-1 = 'exec-and-forget bash -c "move_node.sh 1"'
+    ctrl-alt-cmd-shift-2 = 'exec-and-forget bash -c "move_node.sh 2"'
+    ctrl-alt-cmd-shift-3 = 'exec-and-forget bash -c "move_node.sh 3"'
+    ctrl-alt-cmd-shift-4 = 'exec-and-forget bash -c "move_node.sh 4"'
+    ctrl-alt-cmd-shift-5 = 'exec-and-forget bash -c "move_node.sh 5"'
+
+    ctrl-alt-cmd-tab = 'workspace-back-and-forth'
+    ctrl-alt-cmd-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+    ctrl-alt-cmd-shift-s = 'exec-and-forget bash -c "aerospace mode service; sketchybar --trigger aerospace_mode_change"'
+
+    cmd-h = [] # Disable "hide application"
+
+[workspace-to-monitor-force-assignment]
+        "􀖇" = 1 #always most right screen
+        1 = ['Virtuell 16:9', 'main']
+        2 = ['Virtuell 16:9', 'main']
+        3 = 'main'
+        4 = 'main'
+        5 = 'main'
+
+[mode.service.binding]
+    esc = ['reload-config', 'mode main', 'exec-and-forget sketchybar --trigger aerospace_mode_change']
+
+# Make all floating
+[[on-window-detected]]
+    run = 'layout floating'
+
+# VS-Code
+[[on-window-detected]]
+    if.app-id = 'com.microsoft.VSCode'
+    run = 'move-node-to-workspace 2'
+
+# Outlook
+[[on-window-detected]]
+    if.app-id = 'com.microsoft.Outlook'
+    run = 'move-node-to-workspace 3'
+
+
+# Spotify
+[[on-window-detected]]
+    if.app-id = 'com.spotify.client'
+    run = 'move-node-to-workspace 4'
+
+[exec.env-vars]
+    PATH = '${HOME}/.config/aerospace_scripts:/opt/homebrew/bin:${PATH}'
