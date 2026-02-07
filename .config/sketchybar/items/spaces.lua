@@ -15,11 +15,9 @@ local mode_indicator = SBAR.add("item", "aerospace_mode", {
 		string = "",
 		padding_right = 0,
 	},
+	background = { drawing = true },
 	drawing = false,
 })
-
--- Add mode indicator to the bracket list
-table.insert(space_item_list, mode_indicator.name)
 
 -- Helper to update the UI based on mode string
 local function update_mode_display(mode)
