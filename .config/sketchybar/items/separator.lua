@@ -1,8 +1,8 @@
 local M = {}
 
-function M.create(name)
+function M.create(name, position)
 	local separator = SBAR.add("item", name or "separator", {
-		position = "left",
+		position = position or "left",
 		icon = { drawing = false },
 	})
 
