@@ -42,7 +42,6 @@ for _, scheme_name in ipairs(sorted_scheme_names) do
 			color = is_active and COLORS.accent_color or COLORS.disabled_color,
 			font = { style = is_active and "Bold" or "Regular" },
 		},
-		background = { drawing = false },
 		click_script = script,
 	})
 

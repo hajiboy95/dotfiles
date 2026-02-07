@@ -1,6 +1,8 @@
 local border_width = 1
 local corner_raduis = 15
-local item_padding = 6
+local item_padding = 5
+local height = 24
+local size = 15.0
 -- Define default item properties
 local default_item = {
 	-- always the left object
@@ -8,7 +10,7 @@ local default_item = {
 		font = {
 			family = "Hack Nerd Font",
 			-- style = "Bold",
-			size = 15.0,
+			size = size,
 		},
 		color = COLORS.accent_color,
 		padding_left = item_padding,
@@ -21,19 +23,19 @@ local default_item = {
 			-- family = "Hack Nerd Font",
 			family = "SF Pro",
 			style = "Semibold",
-			size = 14.0,
+			size = size,
 		},
 		color = COLORS.accent_color,
 		padding_right = item_padding,
+		y_offset = 1,
 	},
 	background = {
 		color = COLORS.background,
 		border_color = COLORS.background_border,
 		border_width = border_width,
 		corner_radius = corner_raduis,
-		height = 24,
-		padding_left = item_padding / 2,
-		padding_right = item_padding / 2,
+		height = height,
+		drawing = false,
 	},
 	popup = {
 		background = {
@@ -50,8 +52,7 @@ SBAR.default(default_item)
 -- Add Bar
 SBAR.bar({
 	-- position = "top",
-	height = 32,
-	color = COLORS.bar_color,
+	height = height,
 	blur_radius = 30,
 })
 

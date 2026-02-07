@@ -29,13 +29,6 @@ for i = 1, max_items do
 			width = 150,
 			align = "left",
 		},
-
-		background = {
-			drawing = false,
-			padding_left = 12,
-			padding_right = 12,
-			corner_radius = 12,
-		},
 	})
 	table.insert(popup_items, item)
 end

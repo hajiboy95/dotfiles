@@ -9,7 +9,6 @@ local icons = {
 local volume_slider = SBAR.add("slider", 100, {
 	position = "right",
 	updates = true,
-	background = { drawing = false },
 	label = { drawing = false },
 	icon = { drawing = false },
 	slider = {
@@ -24,15 +23,11 @@ local volume_slider = SBAR.add("slider", 100, {
 			drawing = false,
 		},
 	},
-	padding_left = 0,
-	padding_right = 0,
 })
 
 local volume_icon = SBAR.add("item", "volume_icon", {
 	position = "right",
-	padding_left = 0,
-	padding_right = 0,
-	background = { drawing = false },
+	label = { drawing = false },
 })
 
 SBAR.add("bracket", "volume.bracket", {
@@ -64,14 +59,10 @@ volume_slider:subscribe("volume_change", function(env)
 end)
 
 local function animate_slider_width(width)
-	-- Determine padding based on whether the slider is opening or closing
-	local padding = (width > 0) and 10 or 0
-
 	-- Run the animation
 	SBAR.animate("tanh", 30.0, function()
 		volume_slider:set({
 			slider = { width = width },
-			padding_right = padding,
 		})
 	end)
 end

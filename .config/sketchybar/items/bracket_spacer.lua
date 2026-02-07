@@ -6,7 +6,6 @@ function M.create(name, width, position)
 		width = width,
 		label = { drawing = false },
 		icon = { drawing = false },
-		background = { drawing = false },
 	})
 
 	return spacer

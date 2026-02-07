@@ -2,10 +2,6 @@ require("globals")
 -- 1. Setup Bar and Defaults
 SBAR.begin_config() -- Pauses redraw for faster loading
 
-local bracker_spacer_module = require("items.bracket_spacer")
-local lpad = DEFAULT_ITEM.background.padding_left
-local rpad = DEFAULT_ITEM.background.padding_right
-
 local separator_module = require("items.separator")
 
 -- Left Side
@@ -14,16 +10,17 @@ separator_module.create("menu_separator")
 
 -- Right Side (Order: Right -> Left)
 require("items.calendar")
-bracker_spacer_module.create("spacer_1", rpad + lpad)
+require("items.battery")
 require("items.volume")
-bracker_spacer_module.create("spacer_2", lpad)
 require("items.pomodoro")
 require("items.theme_picker")
-require("items.battery")
-bracker_spacer_module.create("spacer_3", rpad)
-require("items.network")
-bracker_spacer_module.create("spacer_4", rpad)
 require("items.spofity")
+SBAR.add(
+	"bracket",
+	"right.bracket",
+	{ "cal.bracket", "theme_picker", "spotify.anchor" },
+	{ background = { drawing = true } }
+)
 
 -- Reset on unlock
 require("items.unlock_reset")
@@ -38,8 +35,10 @@ local spaces_loader = SBAR.add("item", { drawing = false })
 spaces_loader:subscribe("aerospace_is_ready", function()
 	-- This code runs only when the background waiter finishes
 	SBAR.begin_config()
-	require("items.spaces")
+	local space_bracket_items = require("items.spaces")
 	require("items.front_app")
+	table.insert(space_bracket_items, "front_app")
+	SBAR.add("bracket", "spaces.bracket", space_bracket_items, { background = { drawing = true } })
 	separator_module.create("front_app_separator")
 	require("items.resources")
 	SBAR.end_config()

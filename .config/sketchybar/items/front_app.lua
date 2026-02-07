@@ -3,7 +3,7 @@ local icon_map = require("helpers.icon_map")
 local front_app = SBAR.add("item", "front_app", {
 	position = "left",
 	icon = {
-		font = "sketchybar-app-font:Regular:16.0",
+		font = { family = "sketchybar-app-font", style = "Regular" },
 	},
 })
 

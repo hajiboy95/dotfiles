@@ -98,7 +98,6 @@ for _, mins in ipairs(presets) do
 			string = string.format("%2d Minutes", mins),
 		},
 		icon = { drawing = false },
-		background = { drawing = false },
 	})
 
 	p:subscribe("mouse.clicked", function()
@@ -123,7 +122,6 @@ local custom = SBAR.add("item", "timer.custom", {
 		padding_left = DEFAULT_ITEM.icon.padding_left,
 		padding_right = DEFAULT_ITEM.icon.padding_right,
 	},
-	background = { drawing = false },
 })
 
 custom:subscribe("mouse.clicked", function()

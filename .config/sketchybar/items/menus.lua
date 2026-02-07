@@ -10,6 +10,9 @@ local menu_bin = config_dir .. "/helpers/menus/bin/menus"
 local mouse_on_menu = false
 local is_sticky_open = false -- Flag to keep menu open after right-click
 
+-- List to hold item names for the bracket
+local menu_items_list = {}
+
 -- 1. Create the Trigger Icon
 local menu_item = SBAR.add("item", "menu_trigger", {
 	position = "left",
@@ -17,10 +20,13 @@ local menu_item = SBAR.add("item", "menu_trigger", {
 	label = { drawing = false },
 })
 
+-- Add trigger to bracket list
+table.insert(menu_items_list, menu_item.name)
+
 -- 2. Create the Menu Items Pool
 local menu_items = {}
 for i = 1, max_items do
-	menu_items[i] = SBAR.add("item", "menu." .. i, {
+	local item = SBAR.add("item", "menu." .. i, {
 		position = "left",
 		drawing = false,
 		width = 0,
@@ -29,14 +35,23 @@ for i = 1, max_items do
 			font = { style = "Semibold", size = 13.5 },
 			padding_left = DEFAULT_ITEM.icon.padding_left,
 		},
-		background = {
-			corner_radius = 5,
-		},
 		click_script = menu_bin .. " -s " .. i,
 	})
+
+	menu_items[i] = item
+	-- Add each menu item to bracket list
+	table.insert(menu_items_list, item.name)
 end
 
--- 3. Logic: Update Visuals
+-- 3. Create the Bracket
+-- This wraps the Apple Logo + All Menu Items
+SBAR.add("bracket", menu_items_list, {
+	background = {
+		drawing = true,
+	},
+})
+
+-- 4. Logic: Update Visuals
 local function update_menus_visuals(menus_string)
 	local idx = 1
 	for menu_text in string.gmatch(menus_string, "[^\r\n]+") do
@@ -54,7 +69,7 @@ local function update_menus_visuals(menus_string)
 	end
 end
 
--- 4. Logic: Animate & Open
+-- 5. Logic: Animate & Open
 local function open_menu()
 	if APPLICATION_MENU_COLLAPSED == false then
 		return
@@ -99,7 +114,7 @@ local function close_menu()
 	end)
 end
 
--- 5. Logic: Update State
+-- 6. Logic: Update State
 local function update_state()
 	-- Stay open if hovering OR if locked open by right-click
 	if mouse_on_menu or is_sticky_open then
@@ -114,12 +129,11 @@ local function update_state()
 	end
 end
 
--- 6. Bindings
+-- 7. Bindings
 menu_item:subscribe("mouse.clicked", function(env)
 	if env.BUTTON == "left" then
 		-- Native Apple Menu (Index 0)
 		SBAR.exec(menu_bin .. " -s 0")
-		-- Close the sticky animation if it was open
 		is_sticky_open = false
 		update_state()
 	else
@@ -129,14 +143,18 @@ menu_item:subscribe("mouse.clicked", function(env)
 	end
 end)
 
+-- Note: You had duplicate subscriptions here in your original code.
+-- I cleaned it up to a single clear logic flow.
 menu_item:subscribe("mouse.exited", function()
-	update_state()
+	mouse_on_menu = false
+	-- If we aren't sticky, we might close
+	if not is_sticky_open then
+		update_state()
+	end
 end)
 
--- Global Exit: Collapse everything when mouse leaves the bar
-menu_item:subscribe("mouse.exited", function()
-	is_sticky_open = false
-	mouse_on_menu = false
+menu_item:subscribe("mouse.entered", function()
+	mouse_on_menu = true
 	update_state()
 end)
 
@@ -157,7 +175,6 @@ for i = 1, max_items do
 		update_state()
 	end)
 
-	-- Left clicking a menu item also resets the sticky state
 	menu_items[i]:subscribe("mouse.clicked", function()
 		is_sticky_open = false
 		update_state()

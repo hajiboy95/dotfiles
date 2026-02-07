@@ -14,7 +14,6 @@ local spotify_anchor = SBAR.add("item", "spotify.anchor", {
 	position = "right",
 	icon = {
 		string = "",
-		font = { size = 20 },
 	},
 	label = { drawing = false },
 	popup = {

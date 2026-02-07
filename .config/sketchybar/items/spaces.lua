@@ -1,6 +1,8 @@
 local icon_map = require("helpers.icon_map")
 local separator_module = require("items.separator")
 local spaces_store = {}
+local space_item_list = {} -- List to store item names for the bracket
+
 SBAR.add("event", "aerospace_workspace_change")
 SBAR.add("event", "aerospace_mode_change")
 
@@ -15,6 +17,9 @@ local mode_indicator = SBAR.add("item", "aerospace_mode", {
 	},
 	drawing = false,
 })
+
+-- Add mode indicator to the bracket list
+table.insert(space_item_list, mode_indicator.name)
 
 -- Helper to update the UI based on mode string
 local function update_mode_display(mode)
@@ -127,7 +132,8 @@ local function update_space(item, workspace_id, focused_workspace, should_animat
 				string = icon_strip,
 				color = is_focused and COLORS.accent_color or COLORS.disabled_color,
 				drawing = true,
-				font = { family = "sketchybar-app-font", style = "Regular", size = 16.0 },
+				font = { family = "sketchybar-app-font", style = "Regular" },
+				y_offset = -1,
 			},
 		})
 	end)
@@ -149,6 +155,9 @@ if handle then
 			icon = { string = workspace_id },
 			drawing = false,
 		})
+
+		-- Add space to the bracket list
+		table.insert(space_item_list, space.name)
 
 		spaces_store[workspace_id] = {
 			item = space,
@@ -254,7 +263,6 @@ swap_manager:subscribe("fade_in_spaces", function()
 					width = 0,
 					icon = { color = 0x00000000 },
 					label = { color = 0x00000000 },
-					background = { color = 0x00000000 },
 				})
 			end
 		end
@@ -265,13 +273,10 @@ swap_manager:subscribe("fade_in_spaces", function()
 				if data.should_show then
 					local is_focused = (id == focused_name)
 					local text_color = is_focused and COLORS.accent_color or COLORS.disabled_color
-					local bg_color = is_focused and COLORS.background or COLORS.transparent
-
 					data.item:set({
 						width = "dynamic",
 						icon = { color = text_color },
 						label = { color = text_color },
-						background = { color = bg_color },
 					})
 				end
 			end
@@ -290,10 +295,11 @@ swap_manager:subscribe("fade_out_spaces", function()
 					width = 0,
 					icon = { color = COLORS.transparent },
 					label = { color = COLORS.transparent },
-					background = { color = COLORS.transparent },
 				})
 			end
 			space_separator:set({ drawing = false })
 		end
 	end)
 end)
+
+return space_item_list
