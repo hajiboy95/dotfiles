@@ -11,8 +11,8 @@ local mode_indicator = SBAR.add("item", "aerospace_mode", {
 	position = "left",
 	icon = {
 		string = "",
+		padding_right = 0,
 	},
-	label = { dawing = false },
 	drawing = false,
 })
 
