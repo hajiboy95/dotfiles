@@ -31,11 +31,8 @@ local spaces_loader = SBAR.add("item", { drawing = false })
 spaces_loader:subscribe("aerospace_is_ready", function()
 	-- This code runs only when the background waiter finishes
 	SBAR.begin_config()
-	local space_bracket_items = require("items.spaces")
-	require("items.front_app")
-	table.insert(space_bracket_items, "front_app")
-	SBAR.add("bracket", "spaces.bracket", space_bracket_items, { background = { drawing = true } })
-	separator_module.create("front_app_separator")
+	require("items.spaces")
+	separator_module.create("resources_separator")
 	require("items.resources")
 	SBAR.end_config()
 

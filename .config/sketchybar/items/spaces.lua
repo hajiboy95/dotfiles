@@ -1,5 +1,4 @@
 local icon_map = require("helpers.icon_map")
-local separator_module = require("items.separator")
 local spaces_store = {}
 local space_item_list = {} -- List to store item names for the bracket
 
@@ -238,10 +237,79 @@ if handle then
 	end
 end
 
-local space_separator = separator_module.create("space_separator")
+-- ==========================================================
+-- 4. SPACE SEPARATOR
+-- ==========================================================
+local space_separator = SBAR.add("item", "space_separator", {
+	position = "left",
+	label = { drawing = false },
+	icon = { string = "|", padding_left = 0 },
+})
+
+table.insert(space_item_list, space_separator.name)
 
 -- ==========================================================
--- 4. SWAP CONTROLLER (Curtain Effect)
+-- 5. FRONT APP (Integrated)
+-- ==========================================================
+local front_app = SBAR.add("item", "front_app", {
+	position = "left",
+	icon = {
+		font = { family = "sketchybar-app-font", style = "Regular", size = DEFAULT_ITEM.icon.font.size * 1.1 },
+	},
+	label = {
+		font = { size = DEFAULT_ITEM.label.font.size * 1.1 },
+	},
+	drawing = false,
+})
+
+table.insert(space_item_list, front_app.name)
+
+-- ==========================================================
+-- 6. BRACKET CREATION
+-- ==========================================================
+local spaces_bracket = SBAR.add("bracket", space_item_list, {
+	background = { drawing = true },
+})
+
+-- Shared state variable for the animation logic
+local is_app_focused = false
+
+local function update_front_app()
+	SBAR.exec("aerospace list-windows --focused --format '%{app-name}'", function(app_name)
+		local app_name_trimmed = app_name:gsub("\n", "")
+
+		is_app_focused = (app_name_trimmed ~= "")
+
+		if is_app_focused then
+			local icon = icon_map[app_name_trimmed] or icon_map["Default"] or "APP"
+
+			front_app:set({
+				drawing = true,
+				icon = { string = icon },
+				label = { string = app_name_trimmed },
+			})
+
+			-- DIRECT LINK: If app is there, show separator (unless menu is open)
+			if APPLICATION_MENU_COLLAPSED then
+				space_separator:set({ drawing = true })
+			end
+		else
+			-- No app focused -> Hide both
+			front_app:set({ drawing = false })
+			space_separator:set({ drawing = false })
+		end
+	end)
+end
+
+-- Subscribe to changes
+front_app:subscribe({ "front_app_switched", "aerospace_workspace_change" }, function()
+	SBAR.delay(0.5, update_front_app)
+end)
+-- Initial check
+update_front_app()
+
+-- ==========================================================
+-- 7. SWAP CONTROLLER (Curtain Effect)
 -- ==========================================================
 local swap_manager = SBAR.add("item", { drawing = false })
 
@@ -264,9 +332,15 @@ swap_manager:subscribe("fade_in_spaces", function()
 				})
 			end
 		end
+		if is_app_focused then
+			front_app:set({ width = 0, icon = { color = 0x00000000 }, label = { color = 0x00000000 } })
+		end
 
 		-- 2. Animate: Grow width and fade in color
 		SBAR.animate("tanh", APPLICATION_MENU_TRANSITION_FRAMES, function()
+			-- Turn bracket background ON
+			spaces_bracket:set({ background = { drawing = true } })
+
 			for id, data in pairs(spaces_store) do
 				if data.should_show then
 					local is_focused = (id == focused_name)
@@ -278,7 +352,16 @@ swap_manager:subscribe("fade_in_spaces", function()
 					})
 				end
 			end
-			space_separator:set({ drawing = true })
+
+			space_separator:set({ drawing = is_app_focused })
+
+			if is_app_focused then
+				front_app:set({
+					width = "dynamic",
+					icon = { color = 0xffffffff },
+					label = { color = 0xffffffff },
+				})
+			end
 		end)
 	end)
 end)
@@ -287,6 +370,9 @@ end)
 swap_manager:subscribe("fade_out_spaces", function()
 	-- Animate: Shrink width to 0 and transparent color
 	SBAR.animate("tanh", APPLICATION_MENU_TRANSITION_FRAMES, function()
+		-- Turn bracket background OFF
+		spaces_bracket:set({ background = { drawing = false } })
+
 		for _, data in pairs(spaces_store) do
 			if data.should_show then
 				data.item:set({
@@ -295,9 +381,14 @@ swap_manager:subscribe("fade_out_spaces", function()
 					label = { color = COLORS.transparent },
 				})
 			end
-			space_separator:set({ drawing = false })
 		end
+
+		space_separator:set({ drawing = false })
+
+		front_app:set({
+			width = 0,
+			icon = { color = COLORS.transparent },
+			label = { color = COLORS.transparent },
+		})
 	end)
 end)
-
-return space_item_list
