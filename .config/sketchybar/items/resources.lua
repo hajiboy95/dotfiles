@@ -13,10 +13,7 @@ end
 local cpu = SBAR.add("item", "cpu", {
 	position = "left",
 	update_freq = 2,
-	icon = {
-		string = "􀧓",
-		y_offset = 1,
-	},
+	icon = "􀧓",
 })
 
 local function cpu_update()
@@ -40,9 +37,7 @@ cpu:subscribe("routine", cpu_update)
 local memory = SBAR.add("item", "memory", {
 	position = "left",
 	update_freq = 5,
-	icon = {
-		string = "􀫦",
-	},
+	icon = "􀫦",
 })
 
 local function memory_update()
