@@ -10,11 +10,13 @@ separator_module.create("menu_separator")
 
 -- Right Side (Order: Right -> Left)
 require("items.calendar")
+require("items.control_center")
+require("items.theme_picker")
 require("items.battery")
 require("items.volume")
 require("items.pomodoro")
-require("items.theme_picker")
-SBAR.add("bracket", "right.bracket", { "cal.icon", "theme_picker" }, { background = { drawing = true } })
+
+SBAR.add("bracket", "right.bracket", { "cal.icon", "pomodoro" }, { background = { drawing = true } })
 require("items.spofity")
 -- Reset on unlock
 require("items.unlock_reset")

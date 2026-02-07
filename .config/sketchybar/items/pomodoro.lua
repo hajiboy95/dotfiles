@@ -14,7 +14,7 @@ local function format_time(seconds)
 end
 
 -- 4. CREATE MAIN ITEM
-local timer = SBAR.add("item", "timer", {
+local timer = SBAR.add("item", "pomodoro", {
 	position = "right",
 	icon = { string = "􀐱", y_offset = 1 },
 	label = { drawing = false },
