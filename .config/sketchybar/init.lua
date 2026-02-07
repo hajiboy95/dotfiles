@@ -20,6 +20,7 @@ require("items.battery") -- Battery Level
 require("items.cpu") -- CPU %
 bracker_spacer_module.create("spacer_3", rpad)
 require("items.network") -- Net Speed
+bracker_spacer_module.create("spacer_4", rpad)
 require("items.spofity")
 
 -- Reset on unlock
