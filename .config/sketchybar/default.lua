@@ -35,7 +35,6 @@ local default_item = {
 		border_width = border_width,
 		corner_radius = corner_raduis,
 		height = height,
-		drawing = false,
 	},
 	popup = {
 		background = {
@@ -48,7 +47,7 @@ local default_item = {
 }
 
 SBAR.default(default_item)
-
+SBAR.default({ background = { drawing = false } })
 -- Add Bar
 SBAR.bar({
 	-- position = "top",
