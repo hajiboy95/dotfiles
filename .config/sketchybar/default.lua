@@ -1,6 +1,6 @@
 local border_width = 1
 local corner_raduis = 15
-local item_padding = 5
+local item_padding = 8
 local height = 24
 local size = 15.0
 -- Define default item properties

@@ -9,6 +9,7 @@ local picker_trigger = SBAR.add("item", "theme_picker", {
 		font = { size = 18.0 },
 	},
 	label = { drawing = false },
+	popup = { align = "right" },
 })
 
 -- 2. Alphabetical Sorting Logic

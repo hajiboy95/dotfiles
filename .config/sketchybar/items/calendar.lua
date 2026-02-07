@@ -5,17 +5,7 @@ local settings = {
 	},
 }
 
--- 1. THE ICON (Left side of the pill)
-local cal_icon = SBAR.add("item", "cal.icon", {
-	position = "right",
-	icon = {
-		string = "􀐫",
-		padding_left = 0,
-	},
-	label = { drawing = false }, -- Icon only
-})
-
--- 2. THE TIME (Top Line)
+-- 1. THE TIME (Top Line)
 local cal_time = SBAR.add("item", "cal.time", {
 	position = "right",
 	width = 0, -- Stack logic
@@ -28,7 +18,7 @@ local cal_time = SBAR.add("item", "cal.time", {
 	},
 })
 
--- 3. THE DATE (Bottom Line)
+-- 2. THE DATE (Bottom Line)
 local cal_date = SBAR.add("item", "cal.date", {
 	position = "right",
 	y_offset = -6, -- Vertical drop
@@ -48,15 +38,14 @@ local function update_calendar()
 end
 
 -- 5. SUBSCRIPTIONS & INTERACTION
-cal_icon:subscribe("routine", update_calendar)
-cal_icon:set({ update_freq = 30 })
+cal_time:subscribe("routine", update_calendar)
+cal_time:set({ update_freq = 30 })
 
 local function click_event()
 	SBAR.exec("open -a Calendar")
 end
 
 -- Attach click to the whole group
-cal_icon:subscribe("mouse.clicked", click_event)
 cal_time:subscribe("mouse.clicked", click_event)
 cal_date:subscribe("mouse.clicked", click_event)
 
