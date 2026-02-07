@@ -5,7 +5,7 @@
 local max_length = 30 -- Truncate text if longer than this
 local logo_color = 0xff1db954
 
--- 1. Create the Main Item (Removed click_script)
+-- 1. Create the Main Item
 local spotify_anchor = SBAR.add("item", "spotify", {
 	position = "right",
 	icon = {
@@ -16,7 +16,6 @@ local spotify_anchor = SBAR.add("item", "spotify", {
 	label = {
 		string = "Spotify",
 		drawing = true,
-		padding_right = 10,
 	},
 })
 
