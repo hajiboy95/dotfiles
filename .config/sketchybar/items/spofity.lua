@@ -16,6 +16,7 @@ local spotify_anchor = SBAR.add("item", "spotify", {
 	label = {
 		string = "Spotify",
 		drawing = true,
+		y_offset = 0,
 	},
 })
 
