@@ -14,8 +14,8 @@ local function update_front_app()
 			local icon = icon_map[app_name_trimmed] or icon_map["Default"] or "APP"
 			front_app:set({
 				drawing = true,
-				icon = { string = icon },
-				label = { string = app_name_trimmed },
+				icon = { string = icon, font = { size = DEFAULT_ITEM.label.font.size * 1.1 } },
+				label = { string = app_name_trimmed, font = { size = DEFAULT_ITEM.label.font.size * 1.1 } },
 			})
 		else
 			front_app:set({ drawing = false })

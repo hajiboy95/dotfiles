@@ -125,12 +125,13 @@ local function update_space(item, workspace_id, focused_workspace, should_animat
 			icon = {
 				string = workspace_id,
 				color = is_focused and COLORS.accent_color or COLORS.disabled_color,
+				font = { size = DEFAULT_ITEM.icon.font.size * 1.1 },
 			},
 			label = {
 				string = icon_strip,
 				color = is_focused and COLORS.accent_color or COLORS.disabled_color,
 				drawing = true,
-				font = { family = "sketchybar-app-font", style = "Regular" },
+				font = { family = "sketchybar-app-font", style = "Regular", size = DEFAULT_ITEM.label.font.size * 1.1 },
 			},
 		})
 	end)
