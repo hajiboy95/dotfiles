@@ -1,17 +1,10 @@
-local settings = {
-	font = {
-		numbers = "SketchyBar App Font:Bold:13.0", -- Or your preferred bold font
-		text = "SketchyBar App Font:Semibold:10.0",
-	},
-}
-
 -- 1. THE TIME (Top Line)
 local cal_time = SBAR.add("item", "cal.time", {
 	position = "right",
 	width = 0, -- Stack logic
 	y_offset = 4, -- Vertical lift
 	label = {
-		font = settings.font.numbers,
+		font = { size = DEFAULT_ITEM.label.font.size * 0.85 },
 		align = "right",
 		padding_right = 2,
 		padding_left = DEFAULT_ITEM.icon.padding_left,
@@ -23,7 +16,7 @@ local cal_date = SBAR.add("item", "cal.date", {
 	position = "right",
 	y_offset = -6, -- Vertical drop
 	label = {
-		font = settings.font.text,
+		font = { size = DEFAULT_ITEM.label.font.size * 0.7 },
 		color = COLORS.secondary_accent,
 		padding_right = 2,
 		padding_left = DEFAULT_ITEM.icon.padding_left,
