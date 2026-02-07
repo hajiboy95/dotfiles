@@ -1,16 +1,9 @@
 local M = {}
 
-function M.create(name)
-	-- We add the item using the name passed in, or default to "separator"
+function M.create(name, position)
 	local separator = SBAR.add("item", name or "separator", {
-		position = "left",
-		label = {
-			string = "|",
-			y_offset = 2,
-			padding_left = DEFAULT_ITEM.icon.padding_right,
-		},
+		position = position or "left",
 		icon = { drawing = false },
-		background = { drawing = false, padding_left = 0, padding_right = 0 },
 	})
 
 	return separator
