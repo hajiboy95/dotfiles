@@ -15,7 +15,7 @@ local menu_items_list = {}
 -- 1. Create the Trigger Icon
 local menu_item = SBAR.add("item", "menu_trigger", {
 	position = "left",
-	icon = { font = { size = 22.0 }, string = "" },
+	icon = { font = { size = 20.0 }, string = "" },
 	label = { drawing = false },
 })
 

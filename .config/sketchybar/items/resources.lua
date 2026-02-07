@@ -61,7 +61,7 @@ memory:subscribe("routine", memory_update)
 
 -- 1. Configuration
 local interface = "en0" -- WiFi usually en0, Ethernet might be en1
-local popup_width = 45 -- Fixed width to prevent jitter when numbers change
+local popup_width = 50 -- Fixed width to prevent jitter when numbers change
 local position = "left"
 
 -- 2. Helper: Format speed (kbps vs Mbps)
