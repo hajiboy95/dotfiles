@@ -1,4 +1,3 @@
--- items/separator.lua
 local M = {}
 
 function M.create(name)

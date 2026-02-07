@@ -15,14 +15,13 @@ separator_module.create("menu_separator")
 -- Right Side (Order: Right -> Left)
 require("items.calendar")
 bracker_spacer_module.create("spacer_1", rpad + lpad)
-require("items.volume") -- Volume Slider
+require("items.volume")
 bracker_spacer_module.create("spacer_2", lpad)
-require("items.pomodoro") -- Timer
+require("items.pomodoro")
 require("items.theme_picker")
-require("items.battery") -- Battery Level
-require("items.cpu") -- CPU %
+require("items.battery")
 bracker_spacer_module.create("spacer_3", rpad)
-require("items.network") -- Net Speed
+require("items.network")
 bracker_spacer_module.create("spacer_4", rpad)
 require("items.spofity")
 
@@ -41,6 +40,8 @@ spaces_loader:subscribe("aerospace_is_ready", function()
 	SBAR.begin_config()
 	require("items.spaces")
 	require("items.front_app")
+	separator_module.create("front_app_separator")
+	require("items.resources")
 	SBAR.end_config()
 
 	spaces_loader:delete()

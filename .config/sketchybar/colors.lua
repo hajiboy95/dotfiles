@@ -1,4 +1,3 @@
--- ~/.config/sketchybar/colors.lua
 local colors = {}
 local config_dir = os.getenv("CONFIG_DIR")
 local theme_file = config_dir .. "/helpers/active_theme.txt"
