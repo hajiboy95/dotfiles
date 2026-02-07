@@ -4,7 +4,10 @@ local theme_file = config_dir .. "/helpers/active_theme.txt"
 -- 1. The Trigger Item (The anchor for the popup)
 local picker_trigger = SBAR.add("item", "theme_picker", {
 	position = "right",
-	icon = "󰏘",
+	icon = {
+		string = "󰏘",
+		font = { size = DEFAULT_ITEM.icon.font.size * 1.2 },
+	},
 	label = { drawing = false },
 	popup = { align = "right" },
 })
