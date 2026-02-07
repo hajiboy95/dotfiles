@@ -2,7 +2,7 @@ local config_dir = os.getenv("CONFIG_DIR")
 local theme_file = config_dir .. "/helpers/active_theme.txt"
 
 -- 1. The Trigger Item (The anchor for the popup)
-local picker_trigger = SBAR.add("item", "widgets.theme_picker", {
+local picker_trigger = SBAR.add("item", "theme_picker", {
 	position = "right",
 	icon = {
 		string = "󰏘",

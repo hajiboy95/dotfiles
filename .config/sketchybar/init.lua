@@ -14,14 +14,8 @@ require("items.battery")
 require("items.volume")
 require("items.pomodoro")
 require("items.theme_picker")
+SBAR.add("bracket", "right.bracket", { "cal.icon", "theme_picker" }, { background = { drawing = true } })
 require("items.spofity")
-SBAR.add(
-	"bracket",
-	"right.bracket",
-	{ "cal.bracket", "theme_picker", "spotify.anchor" },
-	{ background = { drawing = true } }
-)
-
 -- Reset on unlock
 require("items.unlock_reset")
 
