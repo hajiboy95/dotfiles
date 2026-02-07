@@ -87,7 +87,6 @@ local function close_menu()
 		SBAR.set("/menu\\..*/", {
 			width = 0,
 			label = { color = 0x00000000 },
-			background = { color = 0x00000000 },
 		})
 	end)
 
