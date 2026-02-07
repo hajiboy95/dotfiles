@@ -68,7 +68,7 @@ local function update_space(item, workspace_id, focused_workspace, should_animat
 			local app, mid = line:match("^(.*)|(.-)$")
 			if app and app ~= "" then
 				local lookup = icon_map[app] or icon_map["Default"] or "􀔆"
-				icon_strip = icon_strip .. lookup .. "  "
+				icon_strip = icon_strip .. lookup .. " "
 				if mid and mid ~= "" then
 					monitor_id = mid
 				end
