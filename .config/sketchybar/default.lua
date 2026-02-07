@@ -2,14 +2,13 @@ local border_width = 1
 local corner_raduis = 15
 local item_padding = 8
 local height = 24
-local size = 15.0
+local size = 13.5
 -- Define default item properties
 local default_item = {
 	-- always the left object
 	icon = {
 		font = {
 			family = "Hack Nerd Font",
-			-- style = "Bold",
 			size = size,
 		},
 		color = COLORS.accent_color,
@@ -20,8 +19,7 @@ local default_item = {
 	-- always the right object
 	label = {
 		font = {
-			-- family = "Hack Nerd Font",
-			family = "SF Pro",
+			family = "Hack Nerd Font",
 			style = "Semibold",
 			size = size,
 		},
