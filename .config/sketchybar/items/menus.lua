@@ -1,5 +1,3 @@
-local separator_module = require("items.separator")
-
 -- CONFIGURATION
 local max_items = 15
 local animation_seconds = (APPLICATION_MENU_TRANSITION_FRAMES / 60)
@@ -37,8 +35,6 @@ for i = 1, max_items do
 		click_script = menu_bin .. " -s " .. i,
 	})
 end
-
-separator_module.create("menu_separator")
 
 -- 3. Logic: Update Visuals
 local function update_menus_visuals(menus_string)

@@ -6,8 +6,11 @@ local bracker_spacer_module = require("items.bracket_spacer")
 local lpad = DEFAULT_ITEM.background.padding_left
 local rpad = DEFAULT_ITEM.background.padding_right
 
+local separator_module = require("items.separator")
+
 -- Left Side
 require("items.menus")
+separator_module.create("menu_separator")
 
 -- Right Side (Order: Right -> Left)
 require("items.calendar")
