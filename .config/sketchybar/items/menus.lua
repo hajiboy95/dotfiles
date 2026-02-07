@@ -8,7 +8,6 @@ local menu_bin = config_dir .. "/helpers/menus/bin/menus"
 
 -- STATE VARIABLES
 local mouse_on_menu = false
-local is_sticky_open = false -- Flag to keep menu open after right-click
 
 -- List to hold item names for the bracket
 local menu_items_list = {}
@@ -16,7 +15,7 @@ local menu_items_list = {}
 -- 1. Create the Trigger Icon
 local menu_item = SBAR.add("item", "menu_trigger", {
 	position = "left",
-	icon = { font = { size = 22.0 }, string = "", y_offset = 1 },
+	icon = { font = { size = 22.0 }, string = "" },
 	label = { drawing = false },
 })
 
@@ -32,8 +31,9 @@ for i = 1, max_items do
 		width = 0,
 		icon = { drawing = false },
 		label = {
-			font = { style = "Semibold", size = 13.5 },
+			font = { style = "Semibold" },
 			padding_left = DEFAULT_ITEM.icon.padding_left,
+			y_offset = 0,
 		},
 		click_script = menu_bin .. " -s " .. i,
 	})
@@ -116,13 +116,13 @@ end
 
 -- 6. Logic: Update State
 local function update_state()
-	-- Stay open if hovering OR if locked open by right-click
-	if mouse_on_menu or is_sticky_open then
+	-- Stay open if hovering
+	if mouse_on_menu then
 		open_menu()
 	else
 		-- Small delay to prevent accidental closing during fast mouse movements
 		SBAR.delay(0.2, function()
-			if not mouse_on_menu and not is_sticky_open then
+			if not mouse_on_menu then
 				close_menu()
 			end
 		end)
@@ -130,27 +130,17 @@ local function update_state()
 end
 
 -- 7. Bindings
-menu_item:subscribe("mouse.clicked", function(env)
-	if env.BUTTON == "left" then
-		-- Native Apple Menu (Index 0)
-		SBAR.exec(menu_bin .. " -s 0")
-		is_sticky_open = false
-		update_state()
-	else
-		-- Toggle sticky expansion
-		is_sticky_open = not is_sticky_open
-		update_state()
-	end
+menu_item:subscribe("mouse.clicked", function()
+	-- Native Apple Menu (Index 0)
+	SBAR.exec(menu_bin .. " -s 0")
+	update_state()
 end)
 
 -- Note: You had duplicate subscriptions here in your original code.
 -- I cleaned it up to a single clear logic flow.
 menu_item:subscribe("mouse.exited", function()
 	mouse_on_menu = false
-	-- If we aren't sticky, we might close
-	if not is_sticky_open then
-		update_state()
-	end
+	update_state()
 end)
 
 menu_item:subscribe("mouse.entered", function()
@@ -176,7 +166,6 @@ for i = 1, max_items do
 	end)
 
 	menu_items[i]:subscribe("mouse.clicked", function()
-		is_sticky_open = false
 		update_state()
 	end)
 end
