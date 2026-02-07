@@ -209,6 +209,7 @@ return {
 	[ [[Home]] ] = ":home:",
 	[ [[Home Assistant]] ] = ":home_assistant:",
 	[ [[Hyper]] ] = ":hyper:",
+	[ [[Hyperkey]] ] = ":hyperkey:",
 	[ [[IntelliJ IDEA]] ] = ":idea:",
 	[ [[IINA]] ] = ":iina:",
 	[ [[Adobe Illustrator]] ] = ":illustrator:",
