@@ -8,6 +8,9 @@ os.execute("mkdir -p " .. config_dir .. "/helpers")
 -- 1. Define Common Colors
 colors.white = 0xffffffff
 colors.transparent = 0x00000000
+colors.red = 0xffff4444
+colors.orange = 0xffffa500
+colors.charging = 0xffffd700
 
 -- 2. Define Your Schemes
 local schemes = {
