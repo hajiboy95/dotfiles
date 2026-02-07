@@ -14,6 +14,7 @@ local cpu = SBAR.add("item", "cpu", {
 	position = "left",
 	update_freq = 2,
 	icon = "􀧓",
+	label = { padding_right = 0 },
 })
 
 local function cpu_update()
@@ -38,6 +39,7 @@ local memory = SBAR.add("item", "memory", {
 	position = "left",
 	update_freq = 5,
 	icon = "􀫦",
+	label = { padding_right = 0 },
 })
 
 local function memory_update()
@@ -59,7 +61,7 @@ memory:subscribe("routine", memory_update)
 
 -- 1. Configuration
 local interface = "en0" -- WiFi usually en0, Ethernet might be en1
-local popup_width = 50 -- Fixed width to prevent jitter when numbers change
+local popup_width = 45 -- Fixed width to prevent jitter when numbers change
 local position = "left"
 
 -- 2. Helper: Format speed (kbps vs Mbps)
@@ -73,6 +75,8 @@ local function format_speed(speed_val)
 end
 
 -- 3. Create Network Items
+local pad_r = 4
+local arrow_shift = pad_r * 0.75
 -- Top Layer: Upload Speed
 local network_up = SBAR.add("item", "network_up", {
 	position = position,
@@ -80,15 +84,16 @@ local network_up = SBAR.add("item", "network_up", {
 	update_freq = 2,
 	y_offset = 5, -- Shift Up
 	label = {
-		font = { style = "Heavy", size = DEFAULT_ITEM.label.font.size / 2 },
-		string = "   0 kbps",
+		font = { size = DEFAULT_ITEM.label.font.size * 0.75 },
+		string = "0 kbps",
 		width = popup_width,
 	},
 	icon = {
-		font = { family = "SF Pro", style = "Heavy", size = DEFAULT_ITEM.icon.font.size / 2 },
-		string = "􀄨",
+		font = { size = DEFAULT_ITEM.icon.font.size * 0.75 },
+		string = "",
 		color = COLORS.disabled_color,
 		highlight_color = COLORS.accent_color,
+		padding_right = pad_r,
 	},
 })
 
@@ -97,16 +102,17 @@ local network_down = SBAR.add("item", "network_down", {
 	position = position,
 	y_offset = -5, -- Shift Down
 	label = {
-		font = { style = "Heavy", size = DEFAULT_ITEM.label.font.size / 2 },
+		font = { size = DEFAULT_ITEM.label.font.size * 0.75 },
 		string = "   0 kbps",
 		width = popup_width,
 	},
 	icon = {
-		font = { family = "SF Pro", style = "Heavy", size = DEFAULT_ITEM.icon.font.size / 2 },
-		string = "􀄩",
+		font = { size = DEFAULT_ITEM.icon.font.size * 0.75 },
+		string = "",
 		color = COLORS.disabled_color,
 		highlight_color = COLORS.accent_color,
-		padding_left = 10,
+		padding_left = DEFAULT_ITEM.icon.padding_left + arrow_shift,
+		padding_right = pad_r - arrow_shift,
 	},
 })
 
