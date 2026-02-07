@@ -136,7 +136,13 @@ end
 -- ==========================================================
 -- 3. CREATE WORKSPACE ITEMS
 -- ==========================================================
-SBAR.exec("aerospace list-workspaces --all", function(workspaces)
+
+local handle = io.popen("aerospace list-workspaces --all")
+
+if handle then
+	local workspaces = handle:read("*a")
+	handle:close()
+
 	for workspace_id in workspaces:gmatch("[^\r\n]+") do
 		local space = SBAR.add("item", "space." .. workspace_id, {
 			position = "left",
@@ -223,73 +229,71 @@ SBAR.exec("aerospace list-workspaces --all", function(workspaces)
 		-- Initial Update
 		update_space(space, workspace_id)
 	end
+end
 
-	local space_separator = separator_module.create("space_separator")
+local space_separator = separator_module.create("space_separator")
 
-	-- ==========================================================
-	-- 4. SWAP CONTROLLER (Curtain Effect)
-	-- ==========================================================
-	local swap_manager = SBAR.add("item", { drawing = false })
+-- ==========================================================
+-- 4. SWAP CONTROLLER (Curtain Effect)
+-- ==========================================================
+local swap_manager = SBAR.add("item", { drawing = false })
 
-	-- Register explicit events
-	SBAR.add("event", "fade_in_spaces")
-	SBAR.add("event", "fade_out_spaces")
+-- Register explicit events
+SBAR.add("event", "fade_in_spaces")
+SBAR.add("event", "fade_out_spaces")
 
-	-- === FADE IN LOGIC (SHOW SPACES) ===
-	swap_manager:subscribe("fade_in_spaces", function()
-		SBAR.exec("aerospace list-workspaces --focused", function(focused_name)
-			focused_name = focused_name:gsub("\n", "")
+-- === FADE IN LOGIC (SHOW SPACES) ===
+swap_manager:subscribe("fade_in_spaces", function()
+	SBAR.exec("aerospace list-workspaces --focused", function(focused_name)
+		focused_name = focused_name:gsub("\n", "")
 
-			-- 1. Setup: Reset width to 0
-			for _, data in pairs(spaces_store) do
-				if data.should_show then
-					data.item:set({
-						width = 0,
-						icon = { color = 0x00000000 },
-						label = { color = 0x00000000 },
-						background = { color = 0x00000000 },
-					})
-				end
+		-- 1. Setup: Reset width to 0
+		for _, data in pairs(spaces_store) do
+			if data.should_show then
+				data.item:set({
+					width = 0,
+					icon = { color = 0x00000000 },
+					label = { color = 0x00000000 },
+					background = { color = 0x00000000 },
+				})
 			end
+		end
 
-			-- 2. Animate: Grow width and fade in color
-			SBAR.animate("tanh", APPLICATION_MENU_TRANSITION_FRAMES, function()
-				for id, data in pairs(spaces_store) do
-					if data.should_show then
-						local is_focused = (id == focused_name)
-						local text_color = is_focused and COLORS.accent_color or COLORS.disabled_color
-						local bg_color = is_focused and COLORS.background or COLORS.transparent
-
-						data.item:set({
-							width = "dynamic",
-							icon = { color = text_color },
-							label = { color = text_color },
-							background = { color = bg_color },
-						})
-					end
-				end
-				space_separator:set({ drawing = true })
-			end)
-		end)
-	end)
-
-	-- === FADE OUT LOGIC (HIDE SPACES) ===
-	swap_manager:subscribe("fade_out_spaces", function()
-		-- Animate: Shrink width to 0 and transparent color
+		-- 2. Animate: Grow width and fade in color
 		SBAR.animate("tanh", APPLICATION_MENU_TRANSITION_FRAMES, function()
-			for _, data in pairs(spaces_store) do
+			for id, data in pairs(spaces_store) do
 				if data.should_show then
+					local is_focused = (id == focused_name)
+					local text_color = is_focused and COLORS.accent_color or COLORS.disabled_color
+					local bg_color = is_focused and COLORS.background or COLORS.transparent
+
 					data.item:set({
-						width = 0,
-						icon = { color = COLORS.transparent },
-						label = { color = COLORS.transparent },
-						background = { color = COLORS.transparent },
+						width = "dynamic",
+						icon = { color = text_color },
+						label = { color = text_color },
+						background = { color = bg_color },
 					})
 				end
-				space_separator:set({ drawing = false })
 			end
+			space_separator:set({ drawing = true })
 		end)
 	end)
+end)
 
-	require("items.front_app")
+-- === FADE OUT LOGIC (HIDE SPACES) ===
+swap_manager:subscribe("fade_out_spaces", function()
+	-- Animate: Shrink width to 0 and transparent color
+	SBAR.animate("tanh", APPLICATION_MENU_TRANSITION_FRAMES, function()
+		for _, data in pairs(spaces_store) do
+			if data.should_show then
+				data.item:set({
+					width = 0,
+					icon = { color = COLORS.transparent },
+					label = { color = COLORS.transparent },
+					background = { color = COLORS.transparent },
+				})
+			end
+			space_separator:set({ drawing = false })
+		end
+	end)
 end)

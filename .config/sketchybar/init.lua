@@ -36,6 +36,7 @@ spaces_loader:subscribe("aerospace_is_ready", function()
 	-- This code runs only when the background waiter finishes
 	SBAR.begin_config()
 	require("items.spaces")
+	require("items.front_app")
 	SBAR.end_config()
 
 	spaces_loader:delete()
