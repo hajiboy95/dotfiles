@@ -25,6 +25,7 @@ local timer = SBAR.add("item", "pomodoro", {
 local function stop_timer()
 	active_timer_end = nil
 	timer:set({
+		icon = { padding_right = DEFAULT_ITEM.icon.padding_right },
 		label = { drawing = false },
 		update_freq = 0,
 		popup = { drawing = false },
@@ -77,11 +78,20 @@ timer:subscribe("routine", function()
 	end
 	local now = os.time()
 	local remaining = active_timer_end - now
+	local tight_padding = DEFAULT_ITEM.icon.padding_right * 0.5
+
 	if remaining > 0 then
-		timer:set({ label = { string = format_time(remaining), drawing = true } })
+		timer:set({
+			icon = { padding_right = tight_padding },
+			label = { string = format_time(remaining), drawing = true },
+		})
 	else
 		active_timer_end = nil
-		timer:set({ label = { string = "Done!" }, update_freq = 0 })
+		timer:set({
+			icon = { padding_right = tight_padding },
+			label = { string = "Done!" },
+			update_freq = 0,
+		})
 		play_sound("GuideSuccess.aiff")
 	end
 end)
