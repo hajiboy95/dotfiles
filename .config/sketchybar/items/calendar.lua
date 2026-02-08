@@ -6,7 +6,7 @@ local cal_time = SBAR.add("item", "cal.time", {
 	label = {
 		font = { size = DEFAULT_ITEM.label.font.size * 0.85 },
 		align = "right",
-		padding_right = 2,
+		padding_right = 0,
 		padding_left = DEFAULT_ITEM.icon.padding_left,
 	},
 })
@@ -18,7 +18,7 @@ local cal_date = SBAR.add("item", "cal.date", {
 	label = {
 		font = { size = DEFAULT_ITEM.label.font.size * 0.7 },
 		color = COLORS.secondary_accent,
-		padding_right = 2,
+		padding_right = 0,
 		padding_left = DEFAULT_ITEM.icon.padding_left,
 	},
 	icon = { drawing = false },
