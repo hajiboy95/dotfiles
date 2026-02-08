@@ -190,14 +190,9 @@ if handle then
 				end)
 			end
 
-			-- 2. Debounce Logic
-			if event_name == "aerospace_workspace_change" then
-				if debounce_timer then
-					SBAR.delay_cancel(debounce_timer)
-					debounce_timer = nil
-				end
-				update_space(space, workspace_id, current_focused_workspace)
-			else
+			-- 2. Hybrid Logic: Delay ONLY for window shuffling
+			if event_name == "space_windows_change" then
+				-- DELAYED: Wait for window to actually close/move to avoid "phantom" icons
 				if debounce_timer then
 					SBAR.delay_cancel(debounce_timer)
 				end
@@ -205,6 +200,13 @@ if handle then
 					debounce_timer = nil
 					update_space(space, workspace_id, current_focused_workspace)
 				end)
+			else
+				-- INSTANT: Workspace Change, Front App Switched, Display Change
+				if debounce_timer then
+					SBAR.delay_cancel(debounce_timer)
+					debounce_timer = nil
+				end
+				update_space(space, workspace_id, current_focused_workspace)
 			end
 		end)
 
@@ -307,12 +309,10 @@ local function update_front_app()
 end
 
 -- Subscribe to changes
-front_app:subscribe({ "front_app_switched", "space_windows_change" }, function()
+front_app:subscribe({ "space_windows_change" }, function()
 	SBAR.delay(0.5, update_front_app)
 end)
-front_app:subscribe({
-	"aerospace_workspace_change",
-}, update_front_app)
+front_app:subscribe({ "aerospace_workspace_change", "front_app_switched" }, update_front_app)
 
 -- Initial check
 update_front_app()
