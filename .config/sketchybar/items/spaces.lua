@@ -2,6 +2,7 @@ local icon_map = require("helpers.icon_map")
 local spaces_store = {}
 local space_item_list = {} -- List to store item names for the bracket
 local current_focused_workspace = nil
+local wait_or_window_delay = 0.6
 
 SBAR.add("event", "aerospace_workspace_change")
 SBAR.add("event", "aerospace_mode_change")
@@ -196,7 +197,7 @@ if handle then
 				if debounce_timer then
 					SBAR.delay_cancel(debounce_timer)
 				end
-				debounce_timer = SBAR.delay(0.5, function()
+				debounce_timer = SBAR.delay(wait_or_window_delay, function()
 					debounce_timer = nil
 					update_space(space, workspace_id, current_focused_workspace)
 				end)
@@ -310,7 +311,7 @@ end
 
 -- Subscribe to changes
 front_app:subscribe({ "space_windows_change" }, function()
-	SBAR.delay(0.5, update_front_app)
+	SBAR.delay(wait_or_window_delay, update_front_app)
 end)
 front_app:subscribe({ "aerospace_workspace_change", "front_app_switched" }, update_front_app)
 
