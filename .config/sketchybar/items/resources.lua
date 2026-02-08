@@ -17,6 +17,7 @@ local cpu = SBAR.add("item", "cpu", {
 		string = "􀧓",
 		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
 	},
+	label = { padding_right = 0 },
 })
 
 local function cpu_update()
@@ -44,6 +45,7 @@ local memory = SBAR.add("item", "memory", {
 		string = "􀫦",
 		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
 	},
+	label = { padding_right = 0 },
 })
 
 local function memory_update()
