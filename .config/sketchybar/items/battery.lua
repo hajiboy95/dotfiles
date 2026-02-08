@@ -6,7 +6,6 @@ local battery = SBAR.add("item", "battery", {
 			family = "Hack Nerd Font",
 			style = "Regular",
 		},
-		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
 	},
 	label = { drawing = false }, -- Hidden by default
 })
@@ -51,23 +50,34 @@ local function battery_update()
 				end
 			end
 
+			local icon_padding = DEFAULT_ITEM.icon.padding_right * (should_draw_label and 0.5 or 1.0)
+
 			-- Apply the updates
 			battery:set({
-				icon = { string = icon, color = color },
+				icon = {
+					string = icon,
+					color = color,
+					padding_right = icon_padding, -- Apply the dynamic padding here
+				},
 				label = { string = charge .. "%", color = color, drawing = should_draw_label },
 			})
 		end
 	end)
 end
 
--- 3. INTERACTION
--- Show percentage when hovering, hide when leaving (unless battery is low)
+-- 4. INTERACTION
+-- Show percentage when hovering, hide when leaving
 battery:subscribe("mouse.entered", function()
-	battery:set({ label = { drawing = true } })
+	-- When hovering, we force the label ON, so we must force the padding SMALL
+	battery:set({
+		icon = { padding_right = DEFAULT_ITEM.icon.padding_right * 0.5 },
+		label = { drawing = true },
+	})
 end)
 
 battery:subscribe("mouse.exited", function()
-	-- Re-run the update logic to decide if label should hide or stay (based on low battery)
+	-- Re-run the update logic. This will reset the padding to normal
+	-- unless the battery is low (label stays on).
 	battery_update()
 end)
 
