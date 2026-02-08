@@ -126,6 +126,7 @@ local function update_space(item, workspace_id, focused_workspace)
 				color = is_focused and COLORS.accent_color or COLORS.disabled_color,
 				drawing = true,
 				font = { family = "sketchybar-app-font", style = "Regular", size = DEFAULT_ITEM.label.font.size * 1.1 },
+				y_offset = 1,
 			},
 		})
 	end)

@@ -25,7 +25,6 @@ local default_item = {
 		},
 		color = COLORS.accent_color,
 		padding_right = item_padding,
-		y_offset = 1,
 	},
 	background = {
 		color = COLORS.background,
