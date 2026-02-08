@@ -6,6 +6,7 @@ local battery = SBAR.add("item", "battery", {
 			family = "Hack Nerd Font",
 			style = "Regular",
 		},
+		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
 	},
 	label = { drawing = false }, -- Hidden by default
 })
@@ -38,15 +39,15 @@ local function battery_update()
 				should_draw_label = false
 			else
 				if charge_num > 90 then
-					icon = ""
+					icon = "󰁹"
 				elseif charge_num > 60 then
-					icon = ""
+					icon = "󰂀"
 				elseif charge_num > 40 then
-					icon = ""
+					icon = "󰁾"
 				elseif charge_num > 10 then
-					icon = ""
+					icon = "󰁼"
 				else
-					icon = ""
+					icon = "󰂎"
 				end
 			end
 
