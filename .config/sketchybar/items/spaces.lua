@@ -36,7 +36,7 @@ end)
 -- ==========================================================
 -- 2. WORKSPACE UPDATER LOGIC
 -- ==========================================================
-local function update_space(item, workspace_id, focused_workspace, should_animate)
+local function update_space(item, workspace_id, focused_workspace)
 	if not APPLICATION_MENU_COLLAPSED then
 		return
 	end
@@ -50,7 +50,7 @@ local function update_space(item, workspace_id, focused_workspace, should_animat
 	if not focused_workspace then
 		SBAR.exec("aerospace list-workspaces --focused", function(res)
 			current_focused_workspace = res:gsub("\n", "")
-			update_space(item, workspace_id, current_focused_workspace, should_animate)
+			update_space(item, workspace_id, current_focused_workspace)
 		end)
 		return
 	end
@@ -92,7 +92,6 @@ local function update_space(item, workspace_id, focused_workspace, should_animat
 			and state.icon_strip == icon_strip
 			and state.is_focused == is_focused
 			and state.monitor_id == monitor_id
-			and not should_animate
 		then
 			return
 		end
@@ -110,17 +109,7 @@ local function update_space(item, workspace_id, focused_workspace, should_animat
 			return
 		end
 
-		-- 5. Animation (Bounce)
-		if is_focused and should_animate then
-			SBAR.animate("sin", 10, function()
-				item:set({ y_offset = 6 })
-				SBAR.animate("sin", 10, function()
-					item:set({ y_offset = 0 })
-				end)
-			end)
-		else
-			item:set({ y_offset = 0 })
-		end
+		-- REMOVED: Step 5 Animation block (Moved to event listener)
 
 		-- 6. Draw the Item
 		item:set({
@@ -191,7 +180,15 @@ if handle then
 				current_focused_workspace = env.FOCUSED_WORKSPACE
 			end
 
-			local should_animate = (event_name == "aerospace_workspace_change" or event_name == "mouse.clicked")
+			-- We only animate if this specific space became the focused one
+			if event_name == "aerospace_workspace_change" and workspace_id == current_focused_workspace then
+				SBAR.animate("sin", 10, function()
+					space:set({ y_offset = 6 })
+					SBAR.animate("sin", 10, function()
+						space:set({ y_offset = 0 })
+					end)
+				end)
+			end
 
 			-- 2. Debounce Logic
 			if event_name == "aerospace_workspace_change" then
@@ -199,14 +196,14 @@ if handle then
 					SBAR.delay_cancel(debounce_timer)
 					debounce_timer = nil
 				end
-				update_space(space, workspace_id, current_focused_workspace, should_animate)
+				update_space(space, workspace_id, current_focused_workspace)
 			else
 				if debounce_timer then
 					SBAR.delay_cancel(debounce_timer)
 				end
 				debounce_timer = SBAR.delay(0.5, function()
 					debounce_timer = nil
-					update_space(space, workspace_id, current_focused_workspace, should_animate)
+					update_space(space, workspace_id, current_focused_workspace)
 				end)
 			end
 		end)
@@ -221,7 +218,6 @@ if handle then
 			end
 
 			local is_entering = (env.SENDER == "mouse.entered")
-
 			local workspace_is_focused = (workspace_id == current_focused_workspace)
 
 			if not workspace_is_focused then
