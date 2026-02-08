@@ -1,6 +1,7 @@
 local icon_map = require("helpers.icon_map")
 local spaces_store = {}
 local space_item_list = {} -- List to store item names for the bracket
+local workspace_order = {} -- Store the order from Aerospace to know which is "last"
 local current_focused_workspace = nil
 local wait_or_window_delay = 0.6
 
@@ -33,6 +34,30 @@ end
 mode_indicator:subscribe("aerospace_mode_change", function(env)
 	update_mode_display(env.INFO or "")
 end)
+
+-- ==========================================================
+-- GLOBAL PADDING REFRESHER
+-- ==========================================================
+-- This ensures only the LAST visible item gets the right padding
+local function refresh_all_paddings()
+	-- 1. Find the actual last visible item ID based on the sorted order
+	local last_visible_id = nil
+	for _, id in ipairs(workspace_order) do
+		if spaces_store[id] and spaces_store[id].should_show then
+			last_visible_id = id
+		end
+	end
+
+	-- 2. Apply padding logic to ALL items
+	for id, data in pairs(spaces_store) do
+		if data.should_show then
+			-- If this is the last visible item, apply standard padding. Otherwise 0.
+			local padding_value = (id == last_visible_id) and DEFAULT_ITEM.label.padding_right or 0
+
+			data.item:set({ label = { padding_right = padding_value } })
+		end
+	end
+end
 
 -- ==========================================================
 -- 2. WORKSPACE UPDATER LOGIC
@@ -86,7 +111,7 @@ local function update_space(item, workspace_id, focused_workspace)
 		local has_content = (icon_strip ~= "")
 		local should_show = has_content or is_focused
 
-		-- 4. STATE CHECK (Avoid redundant updates)
+		-- 4. UPDATE CACHE / STATE
 		local state = spaces_store[workspace_id]
 		if
 			state
@@ -94,6 +119,9 @@ local function update_space(item, workspace_id, focused_workspace)
 			and state.is_focused == is_focused
 			and state.monitor_id == monitor_id
 		then
+			-- Even if this item didn't change, the layout of OTHERS might have.
+			-- We must ensure paddings are correct.
+			refresh_all_paddings()
 			return
 		end
 
@@ -107,10 +135,9 @@ local function update_space(item, workspace_id, focused_workspace)
 
 		if not should_show then
 			item:set({ drawing = false })
+			refresh_all_paddings()
 			return
 		end
-
-		-- REMOVED: Step 5 Animation block (Moved to event listener)
 
 		-- 6. Draw the Item
 		item:set({
@@ -120,6 +147,7 @@ local function update_space(item, workspace_id, focused_workspace)
 				string = workspace_id,
 				color = is_focused and COLORS.accent_color or COLORS.disabled_color,
 				font = { size = DEFAULT_ITEM.icon.font.size * 1.1 },
+				padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
 			},
 			label = {
 				string = icon_strip,
@@ -129,6 +157,9 @@ local function update_space(item, workspace_id, focused_workspace)
 				y_offset = 1,
 			},
 		})
+
+		-- 7. Recalculate Global Padding
+		refresh_all_paddings()
 	end)
 end
 
@@ -148,6 +179,9 @@ if handle then
 	handle:close()
 
 	for workspace_id in workspaces:gmatch("[^\r\n]+") do
+		-- Store order for logic later
+		table.insert(workspace_order, workspace_id)
+
 		local space = SBAR.add("item", "space." .. workspace_id, {
 			position = "left",
 			icon = { string = workspace_id },
@@ -252,7 +286,11 @@ end
 local space_separator = SBAR.add("item", "space_separator", {
 	position = "left",
 	label = { drawing = false },
-	icon = { string = "|", padding_left = 0 },
+	icon = {
+		string = "|",
+		padding_left = 0,
+		padding_right = DEFAULT_ITEM.icon.padding_right,
+	},
 })
 
 table.insert(space_item_list, space_separator.name)
@@ -264,6 +302,8 @@ local front_app = SBAR.add("item", "front_app", {
 	position = "left",
 	icon = {
 		font = { family = "sketchybar-app-font", style = "Regular", size = DEFAULT_ITEM.icon.font.size * 1.1 },
+		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
+		padding_left = DEFAULT_ITEM.icon.padding_left * 0.5,
 	},
 	label = {
 		font = { size = DEFAULT_ITEM.label.font.size * 1.1 },
