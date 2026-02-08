@@ -302,7 +302,7 @@ local function update_front_app()
 end
 
 -- Subscribe to changes
-front_app:subscribe({ "front_app_switched", "aerospace_workspace_change" }, function()
+front_app:subscribe({ "front_app_switched", "aerospace_workspace_change", "space_windows_change" }, function()
 	SBAR.delay(0.5, update_front_app)
 end)
 -- Initial check
