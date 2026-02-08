@@ -97,6 +97,8 @@ $netns\
 $shell\
 $character"""
 
+command_timeout = 1000
+
 [custom.battery]
 command = """
 output=$(pmset -g batt)
@@ -107,9 +109,9 @@ if echo "$output" | grep -q "AC Power"; then
         printf "\\033[1;38;2;255;215;0m⚡ %s%%\\033[0m" "$pct"
     fi
 elif echo "$output" | grep -q "Battery Power"; then
-    if [ -n "$pct" ] && [ "$pct" -lt 20 ]; then
+    if [ -n "$pct" ] && [ "$pct" -lt 10 ]; then
         printf "\\033[1;31m󰂃 %s%%\\033[0m" "$pct"
-    elif [ -n "$pct" ] && [ "$pct" -lt 20 ]; then
+    elif [ -n "$pct" ] && [ "$pct" -lt 30 ]; then
         printf "\\033[1;31m⇣ %s%%\\033[0m" "$pct"
     fi
 else
