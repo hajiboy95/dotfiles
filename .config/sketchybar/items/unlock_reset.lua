@@ -13,9 +13,6 @@ unlock_handler:subscribe("after_unlock", function()
         while pgrep -x AeroSpace >/dev/null; do sleep 0.1; done
 
         # 4. Open AeroSpace in background
-        open -g -a AeroSpace
-
-        # 5. Reload SketchyBar to reconnect to the new AeroSpace instance
-        sketchybar --reload
+        open -a AeroSpace
     ]])
 end)
