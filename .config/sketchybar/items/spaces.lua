@@ -1,6 +1,7 @@
 local icon_map = require("helpers.icon_map")
 local spaces_store = {}
 local space_item_list = {} -- List to store item names for the bracket
+local current_focused_workspace = nil
 
 SBAR.add("event", "aerospace_workspace_change")
 SBAR.add("event", "aerospace_mode_change")
@@ -40,12 +41,16 @@ local function update_space(item, workspace_id, focused_workspace, should_animat
 		return
 	end
 
-	-- TODO: WE KNOW WE'LL GET FOCUSED_WORKSPACE ON WORKSPACE CHANGE. IF WE DON'T,
-	-- WE DON'T NEED TO ASK FOR IT AGAIN, PROBLEM: DOUBLE TRIGGER WORKSPACE AND FOCUS CHANGE
-	-- 1. Fetch focus if missing
+	-- Use cached global if specific focus arg is missing
+	if not focused_workspace then
+		focused_workspace = current_focused_workspace
+	end
+
+	-- Fallback: If we still don't have focus (e.g. at very first startup), fetch it once
 	if not focused_workspace then
 		SBAR.exec("aerospace list-workspaces --focused", function(res)
-			update_space(item, workspace_id, res:gsub("\n", ""), should_animate)
+			current_focused_workspace = res:gsub("\n", "")
+			update_space(item, workspace_id, current_focused_workspace, should_animate)
 		end)
 		return
 	end
@@ -140,6 +145,11 @@ end
 -- 3. CREATE WORKSPACE ITEMS
 -- ==========================================================
 
+-- Populate the global variable once at startup
+SBAR.exec("aerospace list-workspaces --focused", function(f)
+	current_focused_workspace = f:gsub("\n", "")
+end)
+
 local handle = io.popen("aerospace list-workspaces --all")
 
 if handle then
@@ -176,26 +186,27 @@ if handle then
 		space:subscribe(space_events, function(env)
 			local event_name = env.SENDER
 
-			-- 2. Determine focus and animation
-			local focused = env.FOCUSED_WORKSPACE
+			-- 1. Update global state immediately if this is a workspace change
+			if event_name == "aerospace_workspace_change" and env.FOCUSED_WORKSPACE then
+				current_focused_workspace = env.FOCUSED_WORKSPACE
+			end
+
 			local should_animate = (event_name == "aerospace_workspace_change" or event_name == "mouse.clicked")
 
-			-- 3. Debounce Logic
+			-- 2. Debounce Logic
 			if event_name == "aerospace_workspace_change" then
-				-- Immediate update for critical events
 				if debounce_timer then
 					SBAR.delay_cancel(debounce_timer)
 					debounce_timer = nil
 				end
-				update_space(space, workspace_id, focused, should_animate)
+				update_space(space, workspace_id, current_focused_workspace, should_animate)
 			else
-				-- Debounced update for frequent events
 				if debounce_timer then
 					SBAR.delay_cancel(debounce_timer)
 				end
 				debounce_timer = SBAR.delay(0.5, function()
 					debounce_timer = nil
-					update_space(space, workspace_id, focused, should_animate)
+					update_space(space, workspace_id, current_focused_workspace, should_animate)
 				end)
 			end
 		end)
@@ -211,25 +222,23 @@ if handle then
 
 			local is_entering = (env.SENDER == "mouse.entered")
 
-			SBAR.exec("aerospace list-workspaces --focused", function(focused)
-				local workspace_is_focused = (focused:gsub("\n", "") == workspace_id)
+			local workspace_is_focused = (workspace_id == current_focused_workspace)
 
-				if not workspace_is_focused then
-					if is_entering then
-						-- HIGHLIGHT (Hover-Farben an, Hintergrund an)
-						space:set({
-							icon = { color = COLORS.accent_color },
-							label = { color = COLORS.accent_color },
-						})
-					else
-						-- RESET (Zurück zum Standard für inaktive Spaces)
-						space:set({
-							icon = { color = COLORS.disabled_color },
-							label = { color = COLORS.disabled_color },
-						})
-					end
+			if not workspace_is_focused then
+				if is_entering then
+					-- HIGHLIGHT (Hover-Farben an, Hintergrund an)
+					space:set({
+						icon = { color = COLORS.accent_color },
+						label = { color = COLORS.accent_color },
+					})
+				else
+					-- RESET (Zurück zum Standard für inaktive Spaces)
+					space:set({
+						icon = { color = COLORS.disabled_color },
+						label = { color = COLORS.disabled_color },
+					})
 				end
-			end)
+			end
 		end)
 
 		-- Initial Update
