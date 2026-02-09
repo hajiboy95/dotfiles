@@ -35,6 +35,11 @@ mode_indicator:subscribe("aerospace_mode_change", function(env)
 	update_mode_display(env.INFO or "")
 end)
 
+-- INITIALIZATION: Fetch current mode on startup
+SBAR.exec("aerospace list-modes --current", function(mode)
+	update_mode_display(mode)
+end)
+
 -- ==========================================================
 -- GLOBAL PADDING REFRESHER
 -- ==========================================================
