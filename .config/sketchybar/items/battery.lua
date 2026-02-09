@@ -34,7 +34,7 @@ local function battery_update()
 			local icon
 			if is_charging then
 				icon = ""
-				color = COLORS.charging
+				color = (charge_num < 20) and COLORS.charging or DEFAULT_ITEM.icon.color
 				should_draw_label = false
 			else
 				if charge_num > 90 then
