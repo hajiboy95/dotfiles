@@ -23,7 +23,8 @@ local mode_indicator = SBAR.add("item", "aerospace_mode", {
 
 -- Helper to update the UI based on mode string
 local function update_mode_display(mode)
-	local should_draw = (mode ~= "main" and mode ~= "")
+	local parsed_mode = mode:gsub("^%s*(.-)%s*$", "%1")
+	local should_draw = (parsed_mode ~= "main" and parsed_mode ~= "")
 	mode_indicator:set({
 		drawing = should_draw,
 		label = { drawing = should_draw },
