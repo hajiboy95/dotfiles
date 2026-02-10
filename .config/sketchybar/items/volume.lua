@@ -76,6 +76,11 @@ volume_slider:subscribe("mouse.exited", function()
 end)
 
 -- Expand on hover over icon (Optional, but makes it feel native)
-volume_icon:subscribe("mouse.clicked", function()
-	animate_slider_width(100)
+-- Expand on hover over icon (Left Click) | Open Settings (Right Click)
+volume_icon:subscribe("mouse.clicked", function(env)
+	if env.BUTTON == "right" then
+		SBAR.exec("open /System/Library/PreferencePanes/Sound.prefPane")
+	else
+		animate_slider_width(100)
+	end
 end)
