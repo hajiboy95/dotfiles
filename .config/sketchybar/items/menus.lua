@@ -129,11 +129,22 @@ local function update_state()
 	end
 end
 
+local function toggle_menu()
+	if APPLICATION_MENU_COLLAPSED then
+		open_menu()
+	else
+		close_menu()
+	end
+end
+
 -- 7. Bindings
-menu_item:subscribe("mouse.clicked", function()
-	-- Native Apple Menu (Index 0)
-	SBAR.exec(menu_bin .. " -s 0")
-	update_state()
+menu_item:subscribe("mouse.clicked", function(env)
+	if env.BUTTON == "right" then
+		toggle_menu()
+		return
+	elseif env.BUTTON == "left" then
+		SBAR.exec(menu_bin .. " -s 0")
+	end
 end)
 
 -- Note: You had duplicate subscriptions here in your original code.
@@ -145,7 +156,6 @@ end)
 
 menu_item:subscribe("mouse.entered", function()
 	mouse_on_menu = true
-	update_state()
 end)
 
 for i = 1, max_items do
@@ -170,7 +180,7 @@ for i = 1, max_items do
 	end)
 end
 
--- -- 6. Watcher (Update menus when app switches), disabled since on focus change moves mouse to middle of foxus window
+-- -- 8. Watcher (Update menus when app switches), disabled since on focus change moves mouse to middle of foxus window
 -- local menu_watcher = SBAR.add("item", { drawing = false })
 -- menu_watcher:subscribe("front_app_switched", function()
 --     SBAR.exec(menu_bin .. " -l", function(result)
