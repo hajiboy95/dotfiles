@@ -120,8 +120,8 @@ local function update_state()
 	if mouse_on_menu then
 		open_menu()
 	else
-		-- Small delay to prevent accidental closing during fast mouse movements
-		SBAR.delay(0.2, function()
+		-- Small delay to prevent accidental closing during switch of items
+		SBAR.delay(0.01, function()
 			if not mouse_on_menu then
 				close_menu()
 			end
@@ -147,8 +147,6 @@ menu_item:subscribe("mouse.clicked", function(env)
 	end
 end)
 
--- Note: You had duplicate subscriptions here in your original code.
--- I cleaned it up to a single clear logic flow.
 menu_item:subscribe("mouse.exited", function()
 	mouse_on_menu = false
 	update_state()
