@@ -155,26 +155,6 @@ on-focus-changed = ['move-mouse window-lazy-center']
     if.app-id = 'com.ugreen.pro.client'
     run = 'layout floating'
 
-# Workspace 2
-[[on-window-detected]]
-    if.app-id = 'com.microsoft.VSCode'
-    run = 'move-node-to-workspace 2'
-
-# Workspace 3
-# Force Layout Accordion. Since Outlook is always open, it's sufficient
-[[on-window-detected]]
-    if.app-id = 'com.microsoft.Outlook'
-    run = ['move-node-to-workspace 3', 'layout accordion']
-
-[[on-window-detected]]
-    if.app-id = 'com.microsoft.Excel'
-    run = 'move-node-to-workspace 3'
-
-[[on-window-detected]]
-    if.app-id = 'notion.id'
-    run = 'move-node-to-workspace 3'
-
-
 # Workspace 4
 [[on-window-detected]]
     if.app-id = 'com.spotify.client'
