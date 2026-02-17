@@ -29,3 +29,6 @@ mouse-hide-while-typing = true
 
 # Advanced
 adjust-cursor-thickness = 2
+
+# Application
+initial-window = false
