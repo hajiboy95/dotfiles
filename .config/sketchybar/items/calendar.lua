@@ -31,7 +31,7 @@ local function update_calendar()
 end
 
 -- 5. SUBSCRIPTIONS & INTERACTION
-cal_time:subscribe("routine", update_calendar)
+cal_time:subscribe({ "routine", "system_woke" }, update_calendar)
 cal_time:set({ update_freq = 30 })
 
 local function click_event()
