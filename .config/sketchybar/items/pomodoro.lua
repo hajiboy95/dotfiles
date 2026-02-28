@@ -92,7 +92,14 @@ timer:subscribe("routine", function()
 			label = { string = "Done!" },
 			update_freq = 0,
 		})
+
 		play_sound("GuideSuccess.aiff")
+
+		-- open popup
+		SBAR.exec(
+			'osascript -e \'tell application "System Events" to display dialog "Timer finished!" '
+				.. 'buttons {"OK"} default button "OK" with title "Pomodoro" with icon caution\''
+		)
 	end
 end)
 
