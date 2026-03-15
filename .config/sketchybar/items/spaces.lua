@@ -1,95 +1,137 @@
 local icon_map = require("helpers.icon_map")
-local spaces_store = {}
-local space_item_list = {} -- List to store item names for the bracket
-local workspace_order = {} -- Store the order from Aerospace to know which is "last"
-local current_focused_workspace = nil
-local wait_or_window_delay = 0.6
 
-SBAR.add("event", "aerospace_workspace_change")
-SBAR.add("event", "aerospace_mode_change")
+-- ==========================================================
+-- STATE
+-- ==========================================================
+local spaces_store = {} -- keyed by workspace_id
+local space_item_list = {} -- for the bracket
+local workspace_order = {} -- keeps insertion order for padding logic
+
+local current_focused_workspace = nil
+local WINDOW_SPAWN_DELAY = 0.5 -- seconds until macOS registers a newly spawned window in list-windows
 
 -- ==========================================================
 -- 1. AEROSPACE MODE INDICATOR
 -- ==========================================================
+SBAR.add("event", "aerospace_workspace_change")
+SBAR.add("event", "aerospace_mode_change")
+
 local mode_indicator = SBAR.add("item", "aerospace_mode", {
 	position = "left",
-	icon = {
-		string = "",
-		padding_right = 0,
-	},
+	icon = { string = "", padding_right = 0 },
 	background = { drawing = true },
 	drawing = false,
 })
 
--- Helper to update the UI based on mode string
 local function update_mode_display(mode)
-	local parsed_mode = mode:gsub("^%s*(.-)%s*$", "%1")
-	local should_draw = (parsed_mode ~= "main" and parsed_mode ~= "")
-	mode_indicator:set({
-		drawing = should_draw,
-		label = { drawing = should_draw },
-	})
+	local parsed = mode:gsub("^%s*(.-)%s*$", "%1")
+	local active = (parsed ~= "main" and parsed ~= "")
+	mode_indicator:set({ drawing = active, label = { drawing = active } })
 end
 
--- Subscription for changes
 mode_indicator:subscribe("aerospace_mode_change", function(env)
 	update_mode_display(env.INFO or "")
 end)
 
--- INITIALIZATION: Fetch current mode on startup
 SBAR.exec("aerospace list-modes --current", function(mode)
 	update_mode_display(mode)
 end)
 
 -- ==========================================================
--- GLOBAL PADDING REFRESHER
+-- HELPERS
 -- ==========================================================
--- This ensures only the LAST visible item gets the right padding
+
+-- Padding: only the last visible item gets default padding.
 local function refresh_all_paddings()
-	-- 1. Find the actual last visible item ID based on the sorted order
 	local last_visible_id = nil
 	for _, id in ipairs(workspace_order) do
-		if spaces_store[id] and spaces_store[id].should_show then
+		local d = spaces_store[id]
+		if d and d.should_show then
 			last_visible_id = id
 		end
 	end
 
-	-- 2. Apply padding logic to ALL items
 	for id, data in pairs(spaces_store) do
 		if data.should_show then
-			-- If this is the last visible item, apply standard padding. Otherwise 0.
-			local padding_value = (id == last_visible_id) and DEFAULT_ITEM.label.padding_right or 0
-
-			data.item:set({ label = { padding_right = padding_value } })
+			local padding = (id == last_visible_id) and DEFAULT_ITEM.label.padding_right or 0
+			data.item:set({ label = { padding_right = padding } })
 		end
 	end
 end
 
--- ==========================================================
--- 2. WORKSPACE UPDATER LOGIC
--- ==========================================================
-local function update_space(item, workspace_id, focused_workspace)
+-- Draw (or hide) one workspace item given pre-fetched info.
+local function apply_space(workspace_id, icon_strip, is_focused, monitor_id)
+	local data = spaces_store[workspace_id]
+	if not data then
+		return
+	end
+
+	local has_content = (icon_strip ~= "")
+	local should_show = has_content or is_focused
+
+	-- Always update cache so refresh_all_paddings() is accurate.
+	local changed = (
+		data.should_show ~= should_show
+		or data.icon_strip ~= icon_strip
+		or data.is_focused ~= is_focused
+		or data.monitor_id ~= monitor_id
+	)
+
+	data.should_show = should_show
+	data.icon_strip = icon_strip
+	data.is_focused = is_focused
+	data.monitor_id = monitor_id
+
+	if not changed then
+		-- Nothing visual changed for this item, but paddings may still need fixing.
+		refresh_all_paddings()
+		return
+	end
+
+	if not should_show then
+		data.item:set({ drawing = false })
+		refresh_all_paddings()
+		return
+	end
+
+	local label_icon = icon_strip
+	if is_focused and label_icon == "" then
+		label_icon = "􀍼"
+	end
+
+	data.item:set({
+		display = monitor_id,
+		drawing = true,
+		icon = {
+			string = workspace_id,
+			color = is_focused and COLORS.accent_color or COLORS.disabled_color,
+			font = { size = DEFAULT_ITEM.icon.font.size * 1.1 },
+			padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
+		},
+		label = {
+			string = label_icon,
+			color = is_focused and COLORS.accent_color or COLORS.disabled_color,
+			drawing = true,
+			font = { family = "sketchybar-app-font", style = "Regular", size = DEFAULT_ITEM.label.font.size * 1.1 },
+			y_offset = 1,
+		},
+	})
+
+	refresh_all_paddings()
+end
+
+-- Fetch window list for one workspace, then call apply_space.
+local function fetch_and_apply(workspace_id)
 	if not APPLICATION_MENU_COLLAPSED then
 		return
 	end
 
-	-- Use cached global if specific focus arg is missing
-	if not focused_workspace then
-		focused_workspace = current_focused_workspace
-	end
-
-	-- Fallback: If we still don't have focus (e.g. at very first startup), fetch it once
-	if not focused_workspace then
-		SBAR.exec("aerospace list-workspaces --focused", function(res)
-			current_focused_workspace = res:gsub("\n", "")
-			update_space(item, workspace_id, current_focused_workspace)
-		end)
+	local focused = current_focused_workspace
+	if not focused then
 		return
-	end
+	end -- still waiting for init
 
-	local is_focused = (focused_workspace == workspace_id)
-
-	-- 2. Get Windows
+	local is_focused = (focused == workspace_id)
 	local cmd = "aerospace list-windows --workspace "
 		.. workspace_id
 		.. " --format '%{app-name}|%{monitor-appkit-nsscreen-screens-id}'"
@@ -101,83 +143,57 @@ local function update_space(item, workspace_id, focused_workspace)
 		for line in windows:gmatch("[^\r\n]+") do
 			local app, mid = line:match("^(.*)|(.-)$")
 			if app and app ~= "" then
-				local lookup = icon_map[app] or icon_map["Default"] or "􀔆"
-				icon_strip = icon_strip .. lookup
+				icon_strip = icon_strip .. (icon_map[app] or icon_map["Default"] or "􀔆")
 				if mid and mid ~= "" then
 					monitor_id = mid
 				end
 			end
 		end
 
-		if is_focused and icon_strip == "" then
-			icon_strip = "􀍼"
-		end
-
-		-- 3. DETERMINE VISIBILITY
-		local has_content = (icon_strip ~= "")
-		local should_show = has_content or is_focused
-
-		-- 4. UPDATE CACHE / STATE
-		local state = spaces_store[workspace_id]
-		if
-			state
-			and state.icon_strip == icon_strip
-			and state.is_focused == is_focused
-			and state.monitor_id == monitor_id
-		then
-			-- Even if this item didn't change, the layout of OTHERS might have.
-			-- We must ensure paddings are correct.
-			refresh_all_paddings()
-			return
-		end
-
-		-- Update cache
-		if state then
-			state.should_show = should_show
-			state.icon_strip = icon_strip
-			state.is_focused = is_focused
-			state.monitor_id = monitor_id
-		end
-
-		if not should_show then
-			item:set({ drawing = false })
-			refresh_all_paddings()
-			return
-		end
-
-		-- 6. Draw the Item
-		item:set({
-			display = monitor_id,
-			drawing = true,
-			icon = {
-				string = workspace_id,
-				color = is_focused and COLORS.accent_color or COLORS.disabled_color,
-				font = { size = DEFAULT_ITEM.icon.font.size * 1.1 },
-				padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
-			},
-			label = {
-				string = icon_strip,
-				color = is_focused and COLORS.accent_color or COLORS.disabled_color,
-				drawing = true,
-				font = { family = "sketchybar-app-font", style = "Regular", size = DEFAULT_ITEM.label.font.size * 1.1 },
-				y_offset = 1,
-			},
-		})
-
-		-- 7. Recalculate Global Padding
-		refresh_all_paddings()
+		apply_space(workspace_id, icon_strip, is_focused, monitor_id)
 	end)
+end
+
+-- ==========================================================
+-- CENTRAL DISPATCHER
+-- One single place that decides what to refresh and when.
+-- ==========================================================
+local global_close_timer = nil -- debounce for window-close events
+
+local function dispatch_update(event_name, focused_workspace)
+	-- Keep global focus state in sync.
+	if focused_workspace then
+		current_focused_workspace = focused_workspace
+	end
+
+	if event_name == "space_windows_change" then
+		-- Window spawn/close: macOS doesn't immediately reflect the new state in list-windows.
+		-- Delay ALL workspace refreshes until macOS has caught up with the new window state.
+		if global_close_timer then
+			SBAR.delay_cancel(global_close_timer)
+		end
+		global_close_timer = SBAR.delay(WINDOW_SPAWN_DELAY, function()
+			global_close_timer = nil
+			for _, id in ipairs(workspace_order) do
+				fetch_and_apply(id)
+			end
+		end)
+	else
+		-- Immediate: workspace switch, front-app switch, display change.
+		-- Cancel any pending close timer so it doesn't fire on stale data.
+		if global_close_timer then
+			SBAR.delay_cancel(global_close_timer)
+			global_close_timer = nil
+		end
+		for _, id in ipairs(workspace_order) do
+			fetch_and_apply(id)
+		end
+	end
 end
 
 -- ==========================================================
 -- 3. CREATE WORKSPACE ITEMS
 -- ==========================================================
-
--- Populate the global variable once at startup
-SBAR.exec("aerospace list-workspaces --focused", function(f)
-	current_focused_workspace = f:gsub("\n", "")
-end)
-
 local handle = io.popen("aerospace list-workspaces --all")
 
 if handle then
@@ -185,7 +201,6 @@ if handle then
 	handle:close()
 
 	for workspace_id in workspaces:gmatch("[^\r\n]+") do
-		-- Store order for logic later
 		table.insert(workspace_order, workspace_id)
 
 		local space = SBAR.add("item", "space." .. workspace_id, {
@@ -194,7 +209,6 @@ if handle then
 			drawing = false,
 		})
 
-		-- Add space to the bracket list
 		table.insert(space_item_list, space.name)
 
 		spaces_store[workspace_id] = {
@@ -205,53 +219,9 @@ if handle then
 			monitor_id = "1",
 		}
 
-		local space_events = {
-			"aerospace_workspace_change",
-			"space_windows_change",
-			"front_app_switched",
-			"display_change",
-		}
-
-		local debounce_timer = nil
-
-		space:subscribe(space_events, function(env)
-			local event_name = env.SENDER
-
-			-- 1. Update global state immediately if this is a workspace change
-			if event_name == "aerospace_workspace_change" and env.FOCUSED_WORKSPACE then
-				current_focused_workspace = env.FOCUSED_WORKSPACE
-			end
-
-			-- We only animate if this specific space became the focused one
-			if event_name == "aerospace_workspace_change" and workspace_id == current_focused_workspace then
-				SBAR.animate("sin", 10, function()
-					space:set({ y_offset = 6 })
-					SBAR.animate("sin", 10, function()
-						space:set({ y_offset = 0 })
-					end)
-				end)
-			end
-
-			-- 2. Hybrid Logic: Delay ONLY for window shuffling
-			if event_name == "space_windows_change" then
-				-- DELAYED: Wait for window to actually close/move to avoid "phantom" icons
-				if debounce_timer then
-					SBAR.delay_cancel(debounce_timer)
-				end
-				debounce_timer = SBAR.delay(wait_or_window_delay, function()
-					debounce_timer = nil
-					update_space(space, workspace_id, current_focused_workspace)
-				end)
-			else
-				-- INSTANT: Workspace Change, Front App Switched, Display Change
-				if debounce_timer then
-					SBAR.delay_cancel(debounce_timer)
-					debounce_timer = nil
-				end
-				update_space(space, workspace_id, current_focused_workspace)
-			end
-		end)
-
+		-- ── Single shared subscriber per space item ──
+		-- We only use the space item for click + hover; ALL event routing
+		-- goes through ONE dedicated item below (dispatcher_item).
 		space:subscribe("mouse.clicked", function()
 			SBAR.exec("aerospace workspace " .. workspace_id)
 		end)
@@ -260,34 +230,48 @@ if handle then
 			if not APPLICATION_MENU_COLLAPSED then
 				return
 			end
-
 			local is_entering = (env.SENDER == "mouse.entered")
-			local workspace_is_focused = (workspace_id == current_focused_workspace)
-
-			if not workspace_is_focused then
-				if is_entering then
-					-- HIGHLIGHT (Hover-Farben an, Hintergrund an)
-					space:set({
-						icon = { color = COLORS.accent_color },
-						label = { color = COLORS.accent_color },
-					})
-				else
-					-- RESET (Zurück zum Standard für inaktive Spaces)
-					space:set({
-						icon = { color = COLORS.disabled_color },
-						label = { color = COLORS.disabled_color },
-					})
-				end
+			local is_this_focused = (workspace_id == current_focused_workspace)
+			if not is_this_focused then
+				space:set({
+					icon = { color = is_entering and COLORS.accent_color or COLORS.disabled_color },
+					label = { color = is_entering and COLORS.accent_color or COLORS.disabled_color },
+				})
 			end
 		end)
-
-		-- Initial Update
-		update_space(space, workspace_id)
 	end
 end
 
 -- ==========================================================
--- 4. SPACE SEPARATOR
+-- 4. CENTRAL EVENT DISPATCHER ITEM (replaces per-item subs)
+-- ==========================================================
+local dispatcher = SBAR.add("item", "spaces.dispatcher", { drawing = false })
+
+dispatcher:subscribe("aerospace_workspace_change", function(env)
+	local new_focus = env.FOCUSED_WORKSPACE
+
+	-- Bounce animation only for the newly focused space.
+	if new_focus then
+		local data = spaces_store[new_focus]
+		if data then
+			SBAR.animate("sin", 10, function()
+				data.item:set({ y_offset = 6 })
+				SBAR.animate("sin", 10, function()
+					data.item:set({ y_offset = 0 })
+				end)
+			end)
+		end
+	end
+
+	dispatch_update("aerospace_workspace_change", new_focus)
+end)
+
+dispatcher:subscribe({ "space_windows_change", "front_app_switched", "display_change" }, function(env)
+	dispatch_update(env.SENDER, nil)
+end)
+
+-- ==========================================================
+-- 5. SPACE SEPARATOR
 -- ==========================================================
 local space_separator = SBAR.add("item", "space_separator", {
 	position = "left",
@@ -302,7 +286,7 @@ local space_separator = SBAR.add("item", "space_separator", {
 table.insert(space_item_list, space_separator.name)
 
 -- ==========================================================
--- 5. FRONT APP (Integrated)
+-- 6. FRONT APP (Integrated)
 -- ==========================================================
 local front_app = SBAR.add("item", "front_app", {
 	position = "left",
@@ -311,123 +295,97 @@ local front_app = SBAR.add("item", "front_app", {
 		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
 		padding_left = DEFAULT_ITEM.icon.padding_left * 0.5,
 	},
-	label = {
-		font = { size = DEFAULT_ITEM.label.font.size * 1.1 },
-	},
+	label = { font = { size = DEFAULT_ITEM.label.font.size * 1.1 } },
 	drawing = false,
 })
 
 table.insert(space_item_list, front_app.name)
 
 -- ==========================================================
--- 6. BRACKET CREATION
+-- 7. BRACKET
 -- ==========================================================
 local spaces_bracket = SBAR.add("bracket", space_item_list, {
 	background = { drawing = true },
 })
 
--- Shared state variable for the animation logic
+-- ==========================================================
+-- 8. FRONT APP UPDATER
+-- ==========================================================
 local is_app_focused = false
 
 local function update_front_app()
 	SBAR.exec("aerospace list-windows --focused --format '%{app-name}'", function(app_name)
-		local app_name_trimmed = app_name:gsub("\n", "")
-
-		is_app_focused = (app_name_trimmed ~= "")
+		local name = app_name:gsub("\n", "")
+		is_app_focused = (name ~= "")
 
 		if is_app_focused then
-			local icon = icon_map[app_name_trimmed] or icon_map["Default"] or "APP"
-
 			front_app:set({
 				drawing = true,
-				icon = { string = icon },
-				label = { string = app_name_trimmed },
+				icon = { string = icon_map[name] or icon_map["Default"] or "APP" },
+				label = { string = name },
 			})
-
-			-- DIRECT LINK: If app is there, show separator (unless menu is open)
 			if APPLICATION_MENU_COLLAPSED then
 				space_separator:set({ drawing = true })
 			end
 		else
-			-- No app focused -> Hide both
 			front_app:set({ drawing = false })
 			space_separator:set({ drawing = false })
 		end
 	end)
 end
 
--- Subscribe to changes
-front_app:subscribe({ "space_windows_change" }, function()
-	SBAR.delay(wait_or_window_delay, update_front_app)
+-- Same delay: front app may not yet reflect the newly focused window at event time.
+front_app:subscribe("space_windows_change", function()
+	SBAR.delay(WINDOW_SPAWN_DELAY, update_front_app)
 end)
-front_app:subscribe({ "aerospace_workspace_change", "front_app_switched" }, update_front_app)
-
--- Initial check
-update_front_app()
+front_app:subscribe({ "aerospace_workspace_change", "front_app_switched" }, function()
+	update_front_app()
+end)
 
 -- ==========================================================
--- 7. SWAP CONTROLLER (Curtain Effect)
+-- 9. SWAP CONTROLLER (Curtain / Fade Effect)
 -- ==========================================================
 local swap_manager = SBAR.add("item", { drawing = false })
 
--- Register explicit events
 SBAR.add("event", "fade_in_spaces")
 SBAR.add("event", "fade_out_spaces")
 
--- === FADE IN LOGIC (SHOW SPACES) ===
 swap_manager:subscribe("fade_in_spaces", function()
 	SBAR.exec("aerospace list-workspaces --focused", function(focused_name)
 		focused_name = focused_name:gsub("\n", "")
 
-		-- 1. Setup: Reset width to 0
+		-- Reset widths/colors first.
 		for _, data in pairs(spaces_store) do
 			if data.should_show then
-				data.item:set({
-					width = 0,
-					icon = { color = 0x00000000 },
-					label = { color = 0x00000000 },
-				})
+				data.item:set({ width = 0, icon = { color = 0x00000000 }, label = { color = 0x00000000 } })
 			end
 		end
 		if is_app_focused then
 			front_app:set({ width = 0, icon = { color = 0x00000000 }, label = { color = 0x00000000 } })
 		end
 
-		-- 2. Animate: Grow width and fade in color
+		-- Animate in.
 		SBAR.animate("tanh", APPLICATION_MENU_TRANSITION_FRAMES, function()
-			-- Turn bracket background ON
 			spaces_bracket:set({ background = { drawing = true } })
 
 			for id, data in pairs(spaces_store) do
 				if data.should_show then
-					local is_focused = (id == focused_name)
-					local text_color = is_focused and COLORS.accent_color or COLORS.disabled_color
-					data.item:set({
-						width = "dynamic",
-						icon = { color = text_color },
-						label = { color = text_color },
-					})
+					local color = (id == focused_name) and COLORS.accent_color or COLORS.disabled_color
+					data.item:set({ width = "dynamic", icon = { color = color }, label = { color = color } })
 				end
 			end
 
 			space_separator:set({ drawing = is_app_focused })
 
 			if is_app_focused then
-				front_app:set({
-					width = "dynamic",
-					icon = { color = 0xffffffff },
-					label = { color = 0xffffffff },
-				})
+				front_app:set({ width = "dynamic", icon = { color = 0xffffffff }, label = { color = 0xffffffff } })
 			end
 		end)
 	end)
 end)
 
--- === FADE OUT LOGIC (HIDE SPACES) ===
 swap_manager:subscribe("fade_out_spaces", function()
-	-- Animate: Shrink width to 0 and transparent color
 	SBAR.animate("tanh", APPLICATION_MENU_TRANSITION_FRAMES, function()
-		-- Turn bracket background OFF
 		spaces_bracket:set({ background = { drawing = false } })
 
 		for _, data in pairs(spaces_store) do
@@ -441,11 +399,19 @@ swap_manager:subscribe("fade_out_spaces", function()
 		end
 
 		space_separator:set({ drawing = false })
-
-		front_app:set({
-			width = 0,
-			icon = { color = COLORS.transparent },
-			label = { color = COLORS.transparent },
-		})
+		front_app:set({ width = 0, icon = { color = COLORS.transparent }, label = { color = COLORS.transparent } })
 	end)
 end)
+
+-- ==========================================================
+-- 10. INITIAL LOAD
+-- ==========================================================
+-- Fetch focused workspace ONCE, then do a single pass over all spaces.
+SBAR.exec("aerospace list-workspaces --focused", function(f)
+	current_focused_workspace = f:gsub("\n", "")
+	for _, id in ipairs(workspace_order) do
+		fetch_and_apply(id)
+	end
+end)
+
+update_front_app()
