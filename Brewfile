@@ -31,6 +31,8 @@ brew "jq"
 brew "lolcrab"
 # Powerful, lightweight programming language
 brew "lua"
+# Tool for linting and static analysis of Lua code
+brew "luacheck"
 # Package manager for the Lua programming language
 brew "luarocks"
 # Open-source, cross-platform JavaScript runtime environment
@@ -51,6 +53,8 @@ brew "starship"
 brew "stow"
 # Change macOS audio source from the command-line
 brew "switchaudio-osx"
+# Programming language designed for robustness, optimality, and clarity
+brew "zig"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
 # Fish shell like syntax highlighting for zsh
@@ -65,6 +69,8 @@ cask "nikitabobko/tap/aerospace"
 cask "android-studio"
 # Memory training application
 cask "anki"
+# AI Coding Agent IDE
+cask "antigravity"
 # Control the platform power state of your Apple Silicon device
 cask "mhaeuser/mhaeuser/battery-toolkit"
 # Display management tool
@@ -84,6 +90,8 @@ cask "hiddenbar"
 cask "hyperkey"
 # Full TeX Live distribution with GUI applications
 cask "mactex"
+# Knowledge base that works on top of a local folder of plain text Markdown files
+cask "obsidian"
 # Control your tools with a few keystrokes
 cask "raycast"
 # Tool that provides consistent, highly configurable symbols for apps
