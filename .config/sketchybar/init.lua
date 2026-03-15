@@ -18,9 +18,7 @@ require("items.pomodoro")
 
 SBAR.add("bracket", "right.bracket", { "theme_picker", "pomodoro" }, { background = { drawing = true } })
 separator_module.create("spotify_separator", "right")
-require("items.spofity")
--- Reset on unlock
-require("items.unlock_reset")
+require("items.spotify")
 
 -- 4. Finalize
 SBAR.end_config()
