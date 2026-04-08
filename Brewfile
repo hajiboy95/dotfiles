@@ -23,6 +23,8 @@ brew "fastfetch"
 brew "fortune"
 # Command-line fuzzy finder written in Go
 brew "fzf"
+# Interact with Google Gemini AI models from the command-line
+brew "gemini-cli"
 # Tool to report network interface bandwidth
 brew "ifstat"
 # Lightweight and flexible command-line JSON processor
@@ -39,6 +41,8 @@ brew "luarocks"
 brew "node@20"
 # Manage multiple Node.js versions
 brew "nvm"
+# Fast, disk space efficient package manager
+brew "pnpm"
 # Object-relational database system
 brew "postgresql@17", restart_service: :changed
 # Interpreted, interactive, object-oriented programming language
@@ -71,8 +75,6 @@ cask "android-studio"
 cask "anki"
 # AI Coding Agent IDE
 cask "antigravity"
-# Control the platform power state of your Apple Silicon device
-cask "mhaeuser/mhaeuser/battery-toolkit"
 # Display management tool
 cask "betterdisplay"
 # Desktop password and login vault
@@ -108,7 +110,9 @@ cask "visual-studio-code"
 cask "zen"
 vscode "aaron-bond.better-comments"
 vscode "affenwiesel.matlab-formatter"
+vscode "cweijan.dbclient-jdbc"
 vscode "cweijan.vscode-mysql-client2"
+vscode "cweijan.vscode-postgresql-client2"
 vscode "dart-code.dart-code"
 vscode "dart-code.flutter"
 vscode "davidanson.vscode-markdownlint"
@@ -116,6 +120,7 @@ vscode "docker.docker"
 vscode "eamodio.gitlens"
 vscode "foxundermoon.shell-format"
 vscode "frhtylcn.pythonsnippets"
+vscode "github.copilot-chat"
 vscode "github.github-vscode-theme"
 vscode "gruntfuggly.todo-tree"
 vscode "james-yu.latex-workshop"
@@ -145,6 +150,7 @@ vscode "ms-vscode-remote.remote-ssh-edit"
 vscode "ms-vscode-remote.remote-wsl"
 vscode "ms-vscode.remote-explorer"
 vscode "njpwerner.autodocstring"
+vscode "rooveterinaryinc.roo-cline"
 vscode "saoudrizwan.claude-dev"
 vscode "shinotatwu-ds.file-tree-generator"
 vscode "stkb.rewrap"
