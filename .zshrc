@@ -7,16 +7,6 @@
 # shellcheck disable=SC2034
 typeset -U path PATH fpath FPATH
 
-### 🔧 PATH SETUP
-
-# Add local bin directories
-export PATH="$HOME/.local/bin:$HOME/flutter/bin:$PATH"
-
-# Add PostgreSQL 17
-export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
-
-# Add Node.js 20
-export PATH="/opt/homebrew/opt/node@20/bin:$PATH"
 
 ### 🐳 Docker CLI Completions
 fpath=("$HOME/.docker/completions" "${fpath[@]}")
@@ -48,6 +38,18 @@ nvm_load() {
 nvm() { nvm_load nvm "$@"; }
 node() { nvm_load node "$@"; }
 npm() { nvm_load npm "$@"; }
+npx() { nvm_load npx "$@"; }
+
+# 🔄 Automatic `.nvmrc` switcher
+# Switches Node version automatically when entering a directory with a .nvmrc file
+autoload -U add-zsh-hook
+load-nvmrc() {
+  if [[ -f .nvmrc && -r .nvmrc ]]; then
+    nvm use
+  fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc # Run on startup
 
 ### 🧭 Utilities
 # 🧭 zoxide (cd replacement)
@@ -145,16 +147,16 @@ function generate_quote() {
     fi
 }
 
-function print_banner() {
-    if [[ "$LINES" -ge "$BANNER_HEIGHT_THRESHOLD" ]]; then
-      fastfetch
-      echo ""
-    fi
-    generate_quote
-}
+# function print_banner() {
+#     if [[ "$LINES" -ge "$BANNER_HEIGHT_THRESHOLD" ]]; then
+#       fastfetch
+#       echo ""
+#     fi
+#     generate_quote
+# }
 
-# Run on startup
-print_banner
+# # Run on startup
+# print_banner
 
 # Override clear
 alias clear='clear && generate_quote'

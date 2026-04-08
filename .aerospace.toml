@@ -128,12 +128,13 @@ on-focus-changed = ['move-mouse window-lazy-center']
     # cmd-alt-h = [] # Disable "hide others"
 
 [workspace-to-monitor-force-assignment]
-        "􀖇" = [1, 'main']
-        1 = ['Virtuell 16:9', 'main']
-        2 = ['Virtuell 16:9', 'main']
-        3 = 'main'
-        4 = 'main'
-        # 5 = 'main'
+        "􀖇" = ['DELL U2720Q', 'Virtuell 16:9', 'main']
+        "􀫀" = ['DELL U2720Q', 'Virtuell 16:9', 'main']
+        1 = ['DELL U2720Q', 'Virtuell 16:9', 'main']
+        2 = ['DELL U2720Q', 'Virtuell 16:9', 'main']
+        3 = ['DELL U2720Q', 'Virtuell 16:9', 'main']
+        4 = 'built-in'
+        # 5 = 'built-in'
         # 6 = ['Immersed 2', 'main']
         # 7 = ['Immersed 2', 'main']
         # 8 = ['Immersed 2', 'main']
@@ -155,10 +156,10 @@ on-focus-changed = ['move-mouse window-lazy-center']
     if.app-id = 'com.ugreen.pro.client'
     run = 'layout floating'
 
-# Workspace 4
+# Music Workspace
 [[on-window-detected]]
     if.app-id = 'com.spotify.client'
-    run = 'move-node-to-workspace 4'
+    run = 'move-node-to-workspace 􀫀'
 
 [exec.env-vars]
     PATH = '${HOME}/.config/aerospace_scripts:/opt/homebrew/bin:${PATH}'
