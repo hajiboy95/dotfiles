@@ -9,7 +9,10 @@ if [ -f "/opt/homebrew/bin/brew" ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-# 2. Specific Tool Path Overrides (highest priority first)
+# 2. Intel / Docker Binaries (Standard macOS paths)
+export PATH="/usr/local/bin:$PATH"
+
+# 3. Specific Tool Path Overrides (highest priority first)
 
 # PostgreSQL 17
 export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
