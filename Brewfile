@@ -3,6 +3,7 @@ tap "laishulu/homebrew"
 tap "mediosz/tap"
 tap "mhaeuser/mhaeuser"
 tap "nikitabobko/tap"
+tap "stripe/stripe-cli"
 # Microsoft Azure CLI 2.0
 brew "azure-cli"
 # Bourne-Again SHell, a UNIX command interpreter
@@ -23,8 +24,6 @@ brew "fastfetch"
 brew "fortune"
 # Command-line fuzzy finder written in Go
 brew "fzf"
-# Interact with Google Gemini AI models from the command-line
-brew "gemini-cli"
 # Tool to report network interface bandwidth
 brew "ifstat"
 # Lightweight and flexible command-line JSON processor
@@ -67,6 +66,8 @@ brew "zsh-syntax-highlighting"
 brew "felixkratz/formulae/borders"
 # Custom macOS statusbar with shell plugin, interaction and graph support
 brew "felixkratz/formulae/sketchybar"
+# Stripe CLI utility
+brew "stripe/stripe-cli/stripe"
 # AeroSpace is an i3-like tiling window manager for macOS
 cask "nikitabobko/tap/aerospace"
 # Tools for building Android applications
@@ -120,7 +121,6 @@ vscode "docker.docker"
 vscode "eamodio.gitlens"
 vscode "foxundermoon.shell-format"
 vscode "frhtylcn.pythonsnippets"
-vscode "github.copilot-chat"
 vscode "github.github-vscode-theme"
 vscode "gruntfuggly.todo-tree"
 vscode "james-yu.latex-workshop"
