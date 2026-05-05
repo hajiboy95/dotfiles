@@ -13,7 +13,7 @@ if [[ -n "$ANTIGRAVITY_AGENT" ]]; then
 
     # Ensure agent has full power (NVM, etc.)
     # shellcheck disable=SC1091
-    [ -f "$HOME/dotfiles/env_power.zsh" ] && source "$HOME/dotfiles/env_power.zsh"
+    [ -f "$HOME/.env_power.zsh" ] && source "$HOME/.env_power.zsh"
 
     return
 fi
@@ -34,7 +34,7 @@ compinit
 
 ### 🐢 Toolchains (NVM, etc.)
 # shellcheck disable=SC1091
-[ -f "$HOME/dotfiles/env_power.zsh" ] && source "$HOME/dotfiles/env_power.zsh"
+[ -f "$HOME/.env_power.zsh" ] && source "$HOME/.env_power.zsh"
 
 # 🔄 Automatic `.nvmrc` switcher
 # Switches Node version automatically when entering a directory with a .nvmrc file

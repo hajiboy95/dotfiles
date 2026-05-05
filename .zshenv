@@ -4,6 +4,11 @@
 # This file is sourced for all zsh instances (interactive, non-interactive, login).
 # Use it for PATH and global environment variables only.
 
+# 4. Agent Toolchains (Eager load for Antigravity)
+if [[ -n "$ANTIGRAVITY_AGENT" && -f "$HOME/.env_power.zsh" ]]; then
+    source "$HOME/.env_power.zsh"
+fi
+
 # 1. Initialize Homebrew (Apple Silicon path)
 if [ -f "/opt/homebrew/bin/brew" ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
