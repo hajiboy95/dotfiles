@@ -1,6 +1,23 @@
 #!/bin/zsh
 # shellcheck shell=bash
 
+# 🚀 Antigravity Agent Jailbreak (Fixes Terminal Blindness)
+if [[ -n "$ANTIGRAVITY_AGENT" ]]; then
+    export PS1='$ '
+    # Unset noisy hooks that inject escape codes or extra output
+    unset -f precmd precmd_functions chpwd chpwd_functions
+    # shellcheck disable=SC2034
+    precmd_functions=()
+    # shellcheck disable=SC2034
+    chpwd_functions=()
+
+    # Ensure agent has full power (NVM, etc.)
+    # shellcheck disable=SC1091
+    [ -f "$HOME/dotfiles/env_power.zsh" ] && source "$HOME/dotfiles/env_power.zsh"
+
+    return
+fi
+
 ### 🛠️ Zsh Configuration
 
 # 1. Automatically remove duplicates from these arrays
@@ -15,30 +32,9 @@ fpath=("$HOME/.docker/completions" "${fpath[@]}")
 autoload -Uz compinit
 compinit
 
-### 🐢 Lazy Load NVM (Speed Optimization)
-# Only loads NVM when you type 'nvm', 'node', or 'npm'
-export NVM_DIR="$HOME/.nvm"
-nvm_load() {
-  # Unset the placeholder functions so they don't loop
-  unset -f nvm node npm
-
-  # Load the real NVM script
-  # shellcheck disable=SC1091
-  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && . "/opt/homebrew/opt/nvm/nvm.sh"
-
-  # Load NVM bash_completion (optional, slightly slower)
-  # shellcheck disable=SC1091
-  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
-
-  # Run the command the user actually typed
-  "$@"
-}
-
-# Create placeholder functions that trigger the loader
-nvm() { nvm_load nvm "$@"; }
-node() { nvm_load node "$@"; }
-npm() { nvm_load npm "$@"; }
-npx() { nvm_load npx "$@"; }
+### 🐢 Toolchains (NVM, etc.)
+# shellcheck disable=SC1091
+[ -f "$HOME/dotfiles/env_power.zsh" ] && source "$HOME/dotfiles/env_power.zsh"
 
 # 🔄 Automatic `.nvmrc` switcher
 # Switches Node version automatically when entering a directory with a .nvmrc file
