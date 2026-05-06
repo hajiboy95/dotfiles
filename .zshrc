@@ -1,11 +1,11 @@
 #!/bin/zsh
-# shellcheck shell=bash
+# shellcheck disable=SC1071
 
 # 🚀 Antigravity Agent Jailbreak (Fixes Terminal Blindness)
 if [[ -n "$ANTIGRAVITY_AGENT" ]]; then
     export PS1='$ '
     # Unset noisy hooks that inject escape codes or extra output
-    unset -f precmd precmd_functions chpwd chpwd_functions
+    unset -f precmd precmd_functions chpwd chpwd_functions 2>/dev/null || true
     # shellcheck disable=SC2034
     precmd_functions=()
     # shellcheck disable=SC2034

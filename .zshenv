@@ -1,5 +1,5 @@
 #!/bin/zsh
-# shellcheck shell=bash
+# shellcheck disable=SC1071
 # .zshenv - Universal Zsh Environment Variables
 # This file is sourced for all zsh instances (interactive, non-interactive, login).
 # Use it for PATH and global environment variables only.

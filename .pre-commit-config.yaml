@@ -11,7 +11,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.6
+    rev: v0.15.12
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -21,9 +21,10 @@ repos:
     rev: v0.11.0
     hooks:
       - id: shellcheck
+        exclude: ^(\.zshrc|\.zshenv|\.env_power\.zsh)$
 
   - repo: https://github.com/JohnnyMorganz/StyLua
-    rev: v2.4.0
+    rev: v2.4.1
     hooks:
       - id: stylua
 
