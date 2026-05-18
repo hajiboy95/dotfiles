@@ -155,6 +155,6 @@ aeroshift = "Ctrl + Alt + Meta + Shift"
 "aeromod + F" = "toggle_window_floating"
 
 # Defaults
-"Alt + Enter" = { "exec" = ["/bin/bash", "-c", "open -a Zen"] }
-"Alt + Shift + Enter" = { "exec" = ["/bin/bash", "-c", "open -a Antigravity"] }
+"Alt + Enter" = { "exec" = ["open_or_pull", "Zen", "app.zen-browser.zen"] }
+"Alt + Shift + Enter" = { "exec" = ["open_or_pull", "Antigravity", "com.google.antigravity"] }
 "Alt + Z" = "toggle_space_activated"
