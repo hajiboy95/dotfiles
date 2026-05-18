@@ -24,10 +24,10 @@ require("items.spotify")
 SBAR.end_config()
 
 -- 5. Setup a "delayed loader" for Spaces
-SBAR.add("event", "aerospace_is_ready")
+SBAR.add("event", "rift_is_ready")
 local spaces_loader = SBAR.add("item", { drawing = false })
 
-spaces_loader:subscribe("aerospace_is_ready", function()
+spaces_loader:subscribe("rift_is_ready", function()
 	-- This code runs only when the background waiter finishes
 	SBAR.begin_config()
 	require("items.spaces")
@@ -35,14 +35,14 @@ spaces_loader:subscribe("aerospace_is_ready", function()
 	require("items.resources")
 	SBAR.end_config()
 
-	spaces_loader:delete()
+	SBAR.remove(spaces_loader.name)
 end)
 
 -- 6. Run the wait loop in the BACKGROUND
 -- We use bash to wait, so Lua can continue to the event_loop immediately
 SBAR.exec([[bash -c '
-    while ! aerospace list-workspaces --all > /dev/null 2>&1; do sleep 0.5; done
-    sketchybar --trigger aerospace_is_ready
+    while ! pgrep -x rift > /dev/null 2>&1; do sleep 0.5; done
+    sketchybar --trigger rift_is_ready
 ' &]])
 
 SBAR.event_loop() -- This keeps the lua process alive

@@ -11,9 +11,12 @@
 
 # Exceptions
 !.config/sketchybar/
+.config/sketchybar/rift-client/
 !.config/sketchybar_bash/
 !.config/raycast_scripts/
 !.config/ghostty
 !.config/aerospace_scripts/
 !.config/starship.toml
 !.config/direnv/
+!.config/rift/
+!.config/karabiner/

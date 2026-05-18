@@ -1,0 +1,160 @@
+[settings]
+animate = true
+animation_duration = 0.3
+animation_fps = 100.0
+
+focus_follows_mouse = false
+mouse_follows_focus = false
+mouse_hides_on_focus = false
+
+auto_focus_blacklist = []
+run_on_start = []
+hot_reload = true
+
+[settings.layout]
+mode = "bsp"
+
+[settings.layout.master_stack]
+master_ratio = 0.6
+master_count = 1
+master_side = "left"
+new_window_placement = "master"
+
+[settings.layout.scrolling]
+column_width_ratio = 0.9
+min_column_width_ratio = 0.3
+max_column_width_ratio = 0.9
+alignment = "center"
+focus_navigation_style = "niri"
+
+[settings.layout.scrolling.gestures]
+enabled = false
+invert_horizontal = false
+fingers = 3
+propagate_to_workspace_swipe = false
+
+[settings.layout.stack]
+stack_offset = 40.0
+default_orientation = "perpendicular"
+
+[settings.layout.gaps.outer]
+top=5
+left = 5
+bottom = 5
+right = 5
+
+[settings.layout.gaps.inner]
+horizontal = 10
+vertical = 10
+
+[settings.ui.menu_bar]
+enabled = false
+show_empty = false
+mode = "all"
+active_label = "index"
+display_style = "layout"
+
+[settings.ui.stack_line]
+enabled = false
+horiz_placement = "top"
+vert_placement = "left"
+thickness = 20.0
+spacing = 1.0
+
+[settings.ui.mission_control]
+enabled = false
+fade_enabled = false
+fade_duration_ms = 180.0
+
+[settings.gestures]
+enabled = false
+invert_horizontal_swipe = false
+swipe_vertical_tolerance = 0.4
+skip_empty = true
+fingers = 3
+distance_pct = 0.08
+haptics_enabled = true
+haptic_pattern = "level_change"
+
+[settings.window_snapping]
+drag_swap_fraction = 0.3
+
+[virtual_workspaces]
+enabled = true
+default_workspace_count = 6
+auto_assign_windows = true
+preserve_focus_per_workspace = true
+workspace_auto_back_and_forth = false
+reapply_app_rules_on_title_change = false
+
+workspace_rules = [
+  { workspace = "1", layout = "bsp" },
+  { workspace = "2", layout = "scrolling" },
+  { workspace = "3", layout = "traditional" },
+  { workspace = "4", layout = "traditional" },
+  { workspace = "􀖇", layout = "scrolling" },
+  { workspace = "􀫀", layout = "scrolling" }
+]
+
+workspace_names = [
+	"1",
+	"2",
+	"3",
+	"4",
+	"􀖇",
+	"􀫀"
+]
+
+app_rules = [
+  { app_id = "com.apple.systempreferences", floating = true },
+  { app_id = "com.ugreen.pro.client", floating = true },
+  { app_id = "com.spotify.client", workspace = 5 }
+]
+
+[modifier_combinations]
+aeromod = "Ctrl + Alt + Meta"
+aeroshift = "Ctrl + Alt + Meta + Shift"
+
+[keys]
+# Focus
+"aeromod + Q" = { move_focus = "left" }
+"aeromod + W" = { move_focus = "down" }
+"aeromod + E" = { move_focus = "up" }
+"aeromod + R" = { move_focus = "right" }
+
+# Move nodes
+"aeromod + J" = { move_node = "left" }
+"aeromod + K" = { move_node = "down" }
+"aeromod + L" = { move_node = "up" }
+"aeromod + Semicolon" = { move_node = "right" }
+
+# Join nodes
+"aeroshift + J" = { join_window = "left" }
+"aeroshift + K" = { join_window = "down" }
+"aeroshift + L" = { join_window = "up" }
+"aeroshift + Semicolon" = { join_window = "right" }
+
+# Workspaces
+"aeromod + 1" = { switch_to_workspace = 0 }
+"aeromod + 2" = { switch_to_workspace = 1 }
+"aeromod + 3" = { switch_to_workspace = 2 }
+"aeromod + 4" = { switch_to_workspace = 3 }
+"aeromod + 5" = { switch_to_workspace = 4 }
+
+"aeroshift + 1" = { "exec" = ["rift_move_and_follow", "0"] }
+"aeroshift + 2" = { "exec" = ["rift_move_and_follow", "1"] }
+"aeroshift + 3" = { "exec" = ["rift_move_and_follow", "2"] }
+"aeroshift + 4" = { "exec" = ["rift_move_and_follow", "3"] }
+"aeroshift + 5" = { "exec" = ["rift_move_and_follow", "4"] }
+
+"aeromod + Tab" = "switch_to_last_workspace"
+
+# Sizing and Window states
+"aeromod + A" = "resize_window_shrink"
+"aeromod + S" = "resize_window_grow"
+"aeromod + F" = "toggle_window_floating"
+
+# Defaults
+"Alt + Enter" = { "exec" = ["/bin/bash", "-c", "open -a Zen"] }
+"Alt + Shift + Enter" = { "exec" = ["/bin/bash", "-c", "open -a Antigravity"] }
+"Alt + Z" = "toggle_space_activated"

@@ -1,3 +1,4 @@
+tap "acsandmann/tap"
 tap "felixkratz/formulae"
 tap "laishulu/homebrew"
 tap "mediosz/tap"
@@ -62,14 +63,14 @@ brew "zig"
 brew "zoxide"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
+# Tiling window manager for macOS
+brew "acsandmann/tap/rift"
 # A window border system for macOS
 brew "felixkratz/formulae/borders"
 # Custom macOS statusbar with shell plugin, interaction and graph support
 brew "felixkratz/formulae/sketchybar"
 # Stripe CLI utility
 brew "stripe/stripe-cli/stripe"
-# AeroSpace is an i3-like tiling window manager for macOS
-cask "nikitabobko/tap/aerospace"
 # Tools for building Android applications
 cask "android-studio"
 # Memory training application
@@ -89,8 +90,8 @@ cask "font-sketchybar-app-font"
 cask "ghostty"
 # Utility to hide menu bar items
 cask "hiddenbar"
-# Convert your caps lock key or any of your modifier keys to the hyper key
-cask "hyperkey"
+# Keyboard customiser
+cask "karabiner-elements"
 # Full TeX Live distribution with GUI applications
 cask "mactex"
 # Knowledge base that works on top of a local folder of plain text Markdown files
@@ -99,8 +100,6 @@ cask "obsidian"
 cask "raycast"
 # Tool that provides consistent, highly configurable symbols for apps
 cask "sf-symbols"
-# SwipeAeroSpace is a tool to switch AeroSpace worksapces by swiping.
-cask "mediosz/tap/swipeaerospace"
 # Mesh VPN based on WireGuard
 cask "tailscale-app"
 # Virtual machines UI using QEMU
@@ -121,6 +120,7 @@ vscode "docker.docker"
 vscode "eamodio.gitlens"
 vscode "foxundermoon.shell-format"
 vscode "frhtylcn.pythonsnippets"
+vscode "github.copilot-chat"
 vscode "github.github-vscode-theme"
 vscode "gruntfuggly.todo-tree"
 vscode "james-yu.latex-workshop"
