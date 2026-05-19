@@ -92,7 +92,9 @@ for _, workspace_id in ipairs(workspace_names) do
 		end
 
 		local success = pcall(function()
-			client:send_request('{"set_workspace":{"workspace":' .. idx .. "}}")
+			client:send_request(
+				'{"execute_command":{"command":"{\\"Reactor\\":{\\"switch_to_workspace\\":' .. idx .. '}}","args":[]}}'
+			)
 		end)
 		if not success then
 			client = nil
