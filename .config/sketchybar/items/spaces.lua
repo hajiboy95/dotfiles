@@ -221,7 +221,7 @@ update_spaces = function()
 				if app and not seen_apps[app] then
 					seen_apps[app] = true
 					local icon = icon_map[app] or icon_map["Default"] or ":default:"
-					icon_strip = icon_strip .. " " .. icon
+					icon_strip = icon_strip .. icon
 				end
 
 				-- Capture the focused app's name dynamically from Rift's window focus info
