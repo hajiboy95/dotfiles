@@ -34,3 +34,5 @@ export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 # Ensure PATH remains unique
 # shellcheck disable=SC2034
 typeset -U path PATH
+. "$HOME/.cargo/env"
+export PATH="$HOME/.cargo/bin:$PATH"
