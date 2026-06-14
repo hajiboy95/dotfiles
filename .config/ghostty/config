@@ -13,7 +13,7 @@ keybind = ctrl+cmd+opt+down=goto_split:bottom
 
 # Quick-terminal
 quick-terminal-position = center
-quick-terminal-size = 70%,60%
+quick-terminal-size = 75%,60%
 
 # Window
 window-padding-x = 10
