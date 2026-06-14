@@ -210,7 +210,6 @@ update_spaces = function()
 
 		-- Construct the icon strip of apps on this workspace
 		local icon_strip = ""
-		local seen_apps = {}
 		if w.windows and #w.windows > 0 then
 			for _, win in ipairs(w.windows) do
 				local app = win.app_name
@@ -218,8 +217,7 @@ update_spaces = function()
 					or win.localized_name
 					or (win.app_info and (win.app_info.localized_name or win.app_info.app_name or win.app_info.bundle_id))
 					or win.bundle_id
-				if app and not seen_apps[app] then
-					seen_apps[app] = true
+				if app then
 					local icon = icon_map[app] or icon_map["Default"] or ":default:"
 					icon_strip = icon_strip .. icon
 				end
