@@ -1,10 +1,8 @@
 tap "acsandmann/tap"
-tap "felixkratz/formulae"
-tap "laishulu/homebrew"
-tap "mediosz/tap"
-tap "mhaeuser/mhaeuser"
-tap "nikitabobko/tap"
-tap "stripe/stripe-cli"
+tap "anomalyco/tap"
+tap "felixkratz/formulae", "https://github.com/FelixKratz/homebrew-formulae"
+tap "nikitabobko/tap", trusted: true
+tap "stripe/stripe-cli", trusted: true
 # Microsoft Azure CLI 2.0
 brew "azure-cli"
 # Bourne-Again SHell, a UNIX command interpreter
@@ -19,6 +17,8 @@ brew "cowsay"
 brew "direnv"
 # Modern, maintained replacement for ls
 brew "eza"
+# Powerful, lightweight programming language
+brew "lua"
 # Like neofetch, but much faster because written mostly in C
 brew "fastfetch"
 # Infamous electronic fortune-cookie generator
@@ -29,10 +29,10 @@ brew "fzf"
 brew "ifstat"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.14"
 # Make your console colorful, with OpenSimplex noise
 brew "lolcrab"
-# Powerful, lightweight programming language
-brew "lua"
 # Tool for linting and static analysis of Lua code
 brew "luacheck"
 # Package manager for the Lua programming language
@@ -41,22 +41,26 @@ brew "luarocks"
 brew "node@20"
 # Manage multiple Node.js versions
 brew "nvm"
+# Swiss-army knife of markup format conversion
+brew "pandoc"
 # Fast, disk space efficient package manager
 brew "pnpm"
 # Object-relational database system
 brew "postgresql@17", restart_service: :changed
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.14"
 # Framework for managing multi-language pre-commit hooks
 brew "pre-commit"
 # Interpreted, interactive, object-oriented programming language
 brew "python@3.12"
+# Safe, concurrent, practical language
+brew "rust"
 # Cross-shell prompt for astronauts
 brew "starship"
 # Organize software neatly under a single directory tree (e.g. /usr/local)
 brew "stow"
 # Change macOS audio source from the command-line
 brew "switchaudio-osx"
+# Markup-based typesetting system
+brew "typst"
 # Programming language designed for robustness, optimality, and clarity
 brew "zig"
 # Shell extension to navigate your filesystem faster
@@ -64,25 +68,29 @@ brew "zoxide"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
 # Tiling window manager for macOS
-brew "acsandmann/tap/rift"
+brew "acsandmann/tap/rift", trusted: true
+# The AI coding agent built for the terminal.
+brew "anomalyco/tap/opencode", trusted: true
 # A window border system for macOS
-brew "felixkratz/formulae/borders"
+brew "felixkratz/formulae/borders", trusted: true
 # Custom macOS statusbar with shell plugin, interaction and graph support
-brew "felixkratz/formulae/sketchybar"
+brew "felixkratz/formulae/sketchybar", trusted: true
 # Stripe CLI utility
 brew "stripe/stripe-cli/stripe"
 # Tools for building Android applications
 cask "android-studio"
 # Memory training application
 cask "anki"
-# AI Coding Agent IDE
+# Agent orchestration platform
 cask "antigravity"
 # Display management tool
 cask "betterdisplay"
 # Desktop password and login vault
 cask "bitwarden"
-# Cut and paste files in Finder
-cask "command-x"
+# Terminal-based AI coding assistant
+cask "claude-code"
+# Menu bar usage monitor for Codex and Claude
+cask "codexbar"
 # App to build and share containerised applications and microservices
 cask "docker-desktop"
 cask "font-sketchybar-app-font"
@@ -90,8 +98,6 @@ cask "font-sketchybar-app-font"
 cask "ghostty"
 # Utility to hide menu bar items
 cask "hiddenbar"
-# Keyboard customiser
-cask "karabiner-elements"
 # Full TeX Live distribution with GUI applications
 cask "mactex"
 # Knowledge base that works on top of a local folder of plain text Markdown files
@@ -100,12 +106,16 @@ cask "obsidian"
 cask "raycast"
 # Tool that provides consistent, highly configurable symbols for apps
 cask "sf-symbols"
+# To-do list and time tracker
+cask "super-productivity"
 # Mesh VPN based on WireGuard
 cask "tailscale-app"
 # Virtual machines UI using QEMU
 cask "utm"
 # Open-source code editor
 cask "visual-studio-code"
+# Multiplayer code editor
+cask "zed"
 # Gecko based web browser
 cask "zen"
 vscode "aaron-bond.better-comments"
@@ -120,7 +130,6 @@ vscode "docker.docker"
 vscode "eamodio.gitlens"
 vscode "foxundermoon.shell-format"
 vscode "frhtylcn.pythonsnippets"
-vscode "github.copilot-chat"
 vscode "github.github-vscode-theme"
 vscode "gruntfuggly.todo-tree"
 vscode "james-yu.latex-workshop"
