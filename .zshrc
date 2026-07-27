@@ -62,6 +62,13 @@ add-zsh-hook chpwd load-nvmrc
 load-nvmrc # Run on startup
 
 ### 🧭 Utilities
+# 🔐 ssh: hand remote hosts a TERM they are guaranteed to have terminfo for.
+# Ghostty keeps its xterm-ghostty entry inside the app bundle, so a host that has
+# never seen Ghostty would otherwise report an unknown terminal type.
+ssh() {
+  TERM=xterm-256color command ssh "$@"
+}
+
 # 🧭 zoxide (cd replacement)
 if command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init zsh --cmd cd)"
@@ -109,8 +116,11 @@ export HOMEBREW_NO_ENV_HINTS=1
 # 🎨 UI & COLORS (Starship + Ghostty)
 # ==========================================
 
-# 1. Force the terminal to announce it supports 256 colors
-export TERM="xterm-256color"
+# 1. Leave TERM to the terminal. Ghostty reports xterm-ghostty, whose terminfo
+# adds curly and coloured underlines (Smulx, Setulc) that xterm-256color lacks;
+# truecolor comes from COLORTERM either way. Ghostty ships that terminfo inside
+# its own bundle rather than the system database, so only remote hosts need the
+# older value -- see the ssh wrapper above.
 
 # 2. Enable color output for standard macOS commands
 export CLICOLOR=1
