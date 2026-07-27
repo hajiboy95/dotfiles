@@ -34,5 +34,8 @@ export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 # Ensure PATH remains unique
 # shellcheck disable=SC2034
 typeset -U path PATH
-. "$HOME/.cargo/env"
-export PATH="$HOME/.cargo/bin:$PATH"
+
+# Rust toolchain. Guarded: .zshenv runs for every zsh, including non-interactive
+# ones, so an unguarded source aborts the file on a machine without rustup.
+# .cargo/env already prepends ~/.cargo/bin.
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"

@@ -163,6 +163,3 @@ alias clear='clear && generate_quote'
 
 # Added by Antigravity IDE
 export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
-
-# Ensure rustup toolchain takes precedence in interactive shell
-export PATH="$HOME/.cargo/bin:$PATH"
