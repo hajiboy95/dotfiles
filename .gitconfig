@@ -7,5 +7,11 @@
 [safe]
 	directory = /opt/homebrew
 [user]
-	email = 193576843+hajiabadi-finbridge@users.noreply.github.com
-	name = hajiabadi-finbridge
+	email = 89179997+hajiboy95@users.noreply.github.com
+	name = hajiboy95
+[credential "https://github.com"]
+	helper =
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/opt/homebrew/bin/gh auth git-credential
