@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 DOTFILES_DIR="$HOME/dotfiles"
+
+# Upstreams are pinned so a fresh machine builds what this machine runs.
+SBARLUA_REF="437bd20"
+RIFT_LUA_REF="7b2bfdad64c51d2d7205c4a62b3ff3e71e207567"
 
 SBAR_LUA_DIR="$HOME/.local/share/sketchybar_lua"
 if [ ! -d "$SBAR_LUA_DIR" ]; then
   echo "🎨 Installing SbarLua module..."
-  # Clone, checkout Lua 5.4 compatible commit (437bd20), compile, install, and clean up in one go
+  # Clone, checkout the Lua 5.4 compatible commit, compile, install, and clean up in one go
+  rm -rf /tmp/SbarLua
   if (git clone https://github.com/FelixKratz/SbarLua.git /tmp/SbarLua && \
       cd /tmp/SbarLua/ && \
-      git checkout 437bd20 && \
+      git checkout "$SBARLUA_REF" && \
       make install && \
       rm -rf /tmp/SbarLua/); then
       echo "✅ SbarLua installed successfully."
@@ -28,14 +33,14 @@ if [ -f "$MENU_HELPER_DIR/makefile" ]; then
   echo "🔨 Compiling 'menus' helper via makefile..."
 
   # Run make inside the directory
-  (cd "$MENU_HELPER_DIR" && make)
+  (cd "$MENU_HELPER_DIR" && make) || true
 
-  # Verify the binary was actually created
+  # Verify the binary was actually created. A miss is reported but not fatal, so
+  # the remaining setup scripts still run.
   if [ -x "$MENU_HELPER_DIR/bin/menus" ]; then
     echo "✅ 'menus' helper compiled successfully."
   else
-    echo "❌ Failed to compile 'menus' helper."
-    exit 1
+    echo "❌ Failed to compile 'menus' helper. Sketchybar menu items will be inert."
   fi
 else
   echo "⚠️ Makefile not found in $MENU_HELPER_DIR. Skipping compilation."
@@ -52,6 +57,7 @@ if [ ! -f "$RIFT_CLIENT_DIR/bin/rift.so" ]; then
   # Clone to temp directory
   rm -rf /tmp/rift.lua
   git clone https://github.com/acsandmann/rift.lua.git /tmp/rift.lua
+  (cd /tmp/rift.lua && git checkout --quiet "$RIFT_LUA_REF")
 
   # Determine architecture
   if [ "$(uname -m)" = "arm64" ]; then
