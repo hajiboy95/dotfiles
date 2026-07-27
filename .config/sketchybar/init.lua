@@ -20,29 +20,16 @@ SBAR.add("bracket", "right.bracket", { "theme_picker", "pomodoro" }, { backgroun
 separator_module.create("spotify_separator", "right")
 require("items.spotify")
 
+-- Spaces widget: loaded directly, no boot-wait needed. The
+-- widget carries its own get_state watchdog (polls until the
+-- KiwiDesk IPC socket answers, then goes event-driven), so the
+-- space items draw immediately and populate the moment KiwiDesk
+-- is up — no pgrep/sleep gate required.
+require("items.spaces")
+separator_module.create("resources_separator")
+require("items.resources")
+
 -- 4. Finalize
 SBAR.end_config()
-
--- 5. Setup a "delayed loader" for Spaces
-SBAR.add("event", "rift_is_ready")
-local spaces_loader = SBAR.add("item", { drawing = false })
-
-spaces_loader:subscribe("rift_is_ready", function()
-	-- This code runs only when the background waiter finishes
-	SBAR.begin_config()
-	require("items.spaces")
-	separator_module.create("resources_separator")
-	require("items.resources")
-	SBAR.end_config()
-
-	SBAR.remove(spaces_loader.name)
-end)
-
--- 6. Run the wait loop in the BACKGROUND
--- We use bash to wait, so Lua can continue to the event_loop immediately
-SBAR.exec([[bash -c '
-    while ! pgrep -x rift > /dev/null 2>&1; do sleep 0.5; done
-    sketchybar --trigger rift_is_ready
-' &]])
 
 SBAR.event_loop() -- This keeps the lua process alive
