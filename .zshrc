@@ -178,5 +178,10 @@ function generate_quote() {
 # # Run on startup
 # print_banner
 
-# Override clear
-alias clear='clear && generate_quote'
+# Override clear, but only where the cow pipeline exists. Without the guard a
+# fresh machine turns every `clear` into three command-not-found errors.
+if command -v fortune >/dev/null 2>&1 &&
+	command -v cowsay >/dev/null 2>&1 &&
+	command -v lolcrab >/dev/null 2>&1; then
+	alias clear='clear && generate_quote'
+fi
