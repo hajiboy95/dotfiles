@@ -3,6 +3,8 @@ tap "anomalyco/tap"
 tap "felixkratz/formulae", "https://github.com/FelixKratz/homebrew-formulae"
 tap "nikitabobko/tap", trusted: true
 tap "stripe/stripe-cli", trusted: true
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.14"
 # Microsoft Azure CLI 2.0
 brew "azure-cli"
 # Bourne-Again SHell, a UNIX command interpreter
@@ -17,22 +19,22 @@ brew "cowsay"
 brew "direnv"
 # Modern, maintained replacement for ls
 brew "eza"
-# Powerful, lightweight programming language
-brew "lua"
 # Like neofetch, but much faster because written mostly in C
 brew "fastfetch"
 # Infamous electronic fortune-cookie generator
 brew "fortune"
 # Command-line fuzzy finder written in Go
 brew "fzf"
+# GitHub command-line tool
+brew "gh"
 # Tool to report network interface bandwidth
 brew "ifstat"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.14"
 # Make your console colorful, with OpenSimplex noise
 brew "lolcrab"
+# Powerful, lightweight programming language
+brew "lua"
 # Tool for linting and static analysis of Lua code
 brew "luacheck"
 # Package manager for the Lua programming language
@@ -45,12 +47,12 @@ brew "nvm"
 brew "pandoc"
 # Fast, disk space efficient package manager
 brew "pnpm"
+# PDF rendering library (based on the xpdf-3.0 code base)
+brew "poppler"
 # Object-relational database system
-brew "postgresql@17", restart_service: :changed
+brew "postgresql@17"
 # Framework for managing multi-language pre-commit hooks
 brew "pre-commit"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.12"
 # Safe, concurrent, practical language
 brew "rust"
 # Cross-shell prompt for astronauts
@@ -77,6 +79,8 @@ brew "felixkratz/formulae/borders", trusted: true
 brew "felixkratz/formulae/sketchybar", trusted: true
 # Stripe CLI utility
 brew "stripe/stripe-cli/stripe"
+# Android SDK component
+cask "android-platform-tools"
 # Tools for building Android applications
 cask "android-studio"
 # Memory training application
@@ -89,8 +93,6 @@ cask "betterdisplay"
 cask "bitwarden"
 # Terminal-based AI coding assistant
 cask "claude-code"
-# Menu bar usage monitor for Codex and Claude
-cask "codexbar"
 # App to build and share containerised applications and microservices
 cask "docker-desktop"
 cask "font-sketchybar-app-font"
@@ -170,3 +172,4 @@ vscode "vscjava.vscode-gradle"
 vscode "vscode-icons-team.vscode-icons"
 vscode "yzane.markdown-pdf"
 vscode "yzhang.markdown-all-in-one"
+cargo "samloader"
