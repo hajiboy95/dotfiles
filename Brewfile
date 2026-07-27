@@ -69,8 +69,6 @@ brew "zig"
 brew "zoxide"
 # Fish shell like syntax highlighting for zsh
 brew "zsh-syntax-highlighting"
-# Tiling window manager for macOS
-brew "acsandmann/tap/rift", trusted: true
 # The AI coding agent built for the terminal.
 brew "anomalyco/tap/opencode", trusted: true
 # A window border system for macOS

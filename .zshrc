@@ -74,10 +74,6 @@ if command -v eza >/dev/null 2>&1; then
   alias ls='eza --icons'
 fi
 
-### 🪟 Rift (window manager)
-alias rift-normal='rift-cli execute config set-outer-gaps 5 5 5 5'
-alias rift-avp='rift-cli execute config set-outer-gaps 37 5 5 5'
-
 _fzf_comprun() {
   local command=$1
   shift
