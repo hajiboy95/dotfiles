@@ -1,9 +1,36 @@
-#!/opt/homebrew/opt/lua@5.4/bin/lua
+#!/opt/homebrew/opt/lua@5.5/bin/lua
 
--- This is only needed once to install the sketchybar module
--- (or for an update of the module). It automatically rebuilds SbarLua
--- if the sketchybar binary is newer than the compiled module.
-os.execute("[ ! -f $HOME/.local/share/sketchybar_lua/sketchybar.so ] || [ $(command -v sketchybar) -nt $HOME/.local/share/sketchybar_lua/sketchybar.so ] && (rm -rf /tmp/SbarLua && git clone https://github.com/FelixKratz/SbarLua.git /tmp/SbarLua && cd /tmp/SbarLua/ && git checkout 437bd20 && make install && rm -rf /tmp/SbarLua/)")
+-- Rebuilds the SbarLua module if the sketchybar binary is newer than
+-- the compiled .so (or the .so is missing).
+--
+-- Temporarily pinned to our fork branch `fix/reentrant-transactions`
+-- instead of upstream's old `437bd20`: that pin predates SbarLua's move
+-- to Lua 5.5, so an auto-rebuild would install a module incompatible
+-- with this config's lua@5.5 interpreter (empty bar), and it lacks our
+-- command-stream fixes (FelixKratz/SbarLua#62).
+--
+-- TODO: once PR #62 is merged, revert this to upstream — replace the
+-- clone+checkout below with the stock line (upstream now vendors 5.5):
+--   git clone https://github.com/FelixKratz/SbarLua.git /tmp/SbarLua
+--   && cd /tmp/SbarLua/ && make install
+-- i.e. swap the hajiboy95 URL back to FelixKratz and drop the
+-- `git checkout fix/reentrant-transactions`.
+os.execute("[ ! -f $HOME/.local/share/sketchybar_lua/sketchybar.so ] || [ $(command -v sketchybar) -nt $HOME/.local/share/sketchybar_lua/sketchybar.so ] && (rm -rf /tmp/SbarLua && git clone https://github.com/hajiboy95/SbarLua.git /tmp/SbarLua && cd /tmp/SbarLua/ && git checkout fix/reentrant-transactions && make install && rm -rf /tmp/SbarLua/)")
+
+-- Cap the Homebrew service logs on each (re)load so a command-stream
+-- storm can never balloon them (KiwiDesk issue #24 once hit 1.7 GB).
+-- Truncating in place preserves the daemon's append fd. Portable:
+-- resolves the Homebrew prefix at runtime, no hard-coded user paths.
+os.execute([[
+  prefix="$(brew --prefix 2>/dev/null || echo /opt/homebrew)"
+  logdir="$prefix/var/log/sketchybar"
+  for f in "$logdir/sketchybar.out.log" "$logdir/sketchybar.err.log"; do
+    [ -f "$f" ] || continue
+    if [ "$(stat -f%z "$f" 2>/dev/null || echo 0)" -gt $((25*1024*1024)) ]; then
+      : > "$f"
+    fi
+  done
+]])
 
 -- Add the sketchybar module to the package cpath (the module could be
 -- installed into the default search path then this would not be needed)
