@@ -20,3 +20,8 @@
 !.config/direnv/
 !.config/rift/
 !.config/karabiner/
+!.config/KiwiDesk/
+.config/KiwiDesk/*
+# Only the event hooks are tracked. gui.json and profiles/ are GUI-managed and
+# still in flux, so they stay local.
+!.config/KiwiDesk/init.lua

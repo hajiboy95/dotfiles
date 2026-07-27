@@ -2,6 +2,7 @@
 -- .luacheckrc
 globals = {
     "SBAR",
+    "KiwiDesk",
     "COLORS",
     "DEFAULT_ITEM",
     "APPLICATION_MENU_COLLAPSED",
