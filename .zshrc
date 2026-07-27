@@ -29,8 +29,22 @@ typeset -U path PATH fpath FPATH
 fpath=("$HOME/.docker/completions" "${fpath[@]}")
 
 # Initialize completions ONCE for everything (Docker, Git, Zsh, etc.)
+# compinit's security scan walks every fpath entry on each shell start. Do the
+# full scan at most once a day and reuse the cached dump (-C) in between.
 autoload -Uz compinit
-compinit
+zmodload -F zsh/stat b:zstat
+zmodload zsh/datetime
+_zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
+if zstat -A _zcompdump_mtime +mtime "$_zcompdump" 2>/dev/null &&
+	((EPOCHSECONDS - _zcompdump_mtime[1] < 86400)); then
+	compinit -C -d "$_zcompdump"
+else
+	compinit -d "$_zcompdump"
+	# compinit only rewrites the dump when it is actually out of date, so stamp
+	# it here or the check above would pick the full scan on every start.
+	touch "$_zcompdump"
+fi
+unset _zcompdump _zcompdump_mtime
 
 ### 🐢 Toolchains (NVM, etc.)
 # shellcheck disable=SC1091
