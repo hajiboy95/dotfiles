@@ -30,11 +30,16 @@ local volume_icon = SBAR.add("item", "volume_icon", {
 	label = { drawing = false },
 })
 
+-- background must carry at least one real property: an empty
+-- { background = {} } makes SbarLua emit a property-less `--set
+-- volume.bracket`, which desyncs the daemon's parser and spams
+-- "Expected <key>=<value>" errors (KiwiDesk issue #24). drawing=false
+-- keeps the previous (undrawn) appearance; set it true for a bg.
 SBAR.add("bracket", "volume.bracket", {
 	volume_icon.name,
 	volume_slider.name,
 }, {
-	background = {},
+	background = { drawing = false },
 })
 
 volume_slider:subscribe("mouse.clicked", function(env)
