@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 DOTFILES_DIR="$HOME/dotfiles"
 NOTEBOOK_CLEANING_DIR="$DOTFILES_DIR/notebook_cleaning"
@@ -9,6 +9,8 @@ echo "➡️ Checking for UV Package and Project manager..."
 if ! command -v uv &>/dev/null; then
   echo "🌐 Installing UV CLI tool..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
+  # The installer drops uv in ~/.local/bin, which this shell doesn't know about yet.
+  export PATH="$HOME/.local/bin:$PATH"
 else
   echo "✔️ uv already installed."
 fi
