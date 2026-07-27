@@ -156,6 +156,3 @@ function generate_quote() {
 
 # Override clear
 alias clear='clear && generate_quote'
-
-# Added by Antigravity IDE
-export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"

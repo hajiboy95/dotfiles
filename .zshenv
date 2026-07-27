@@ -31,6 +31,9 @@ export PATH="$HOME/.local/bin:$PATH"
 # Antigravity bin
 export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 
+# Antigravity IDE bin (separate install from the one above)
+export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
+
 # Ensure PATH remains unique
 # shellcheck disable=SC2034
 typeset -U path PATH
