@@ -33,3 +33,11 @@ setup_shared_brew\.sh$
 RectangleConfig\.json$
 .aerospace_rectangle\.toml$
 Brewfile$
+
+# Repo-only payload: these belong to the repo, not to $HOME
+^/scripts$
+^/bash_helpers$
+^/notebook_cleaning$
+^/LICENSE$
+^\.pre-commit-config\.yaml$
+^\.luacheckrc$
