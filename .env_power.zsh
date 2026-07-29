@@ -19,9 +19,25 @@ nvm_load() {
   # shellcheck disable=SC1091
   [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
 
-  # Ensure a node version is active so 'node' is on PATH
-  if [ -n "$(command -v nvm)" ] && [ "$(nvm current 2>/dev/null)" = "none" ]; then
-    nvm use default >/dev/null 2>&1 || true
+  # Select a node version so 'node' is on PATH.
+  #
+  # This used to run only when `nvm current` was exactly "none". That fires for a
+  # shell with no node at all, but not for one that *inherited* a stale node from
+  # its launcher: GUI apps and IDE agents start from a login environment captured
+  # at boot, `typeset -U path` in .zshenv preserves that PATH entry, and the
+  # non-interactive shells they spawn never reach the interactive `load-nvmrc`
+  # hook. So the stale version was accepted and a project's .nvmrc never won —
+  # e.g. Claude Code running KiwiCV (.nvmrc = 24) on an inherited v20.11.1, where
+  # vite/rolldown died on `node:util` not exporting `styleText` (needs >= 20.12).
+  #
+  # Honour .nvmrc first, then the default alias, regardless of what is already
+  # on PATH.
+  if [ -n "$(command -v nvm)" ]; then
+    if [ -f .nvmrc ] && [ -r .nvmrc ]; then
+      nvm use >/dev/null 2>&1 || nvm use default >/dev/null 2>&1 || true
+    else
+      nvm use default >/dev/null 2>&1 || true
+    fi
   fi
 
   # If arguments were passed, run them
