@@ -10,56 +10,114 @@ if handle then
 	handle:close()
 end
 
-local cpu = SBAR.add("item", "cpu", {
-	position = "left",
-	update_freq = 2,
-	icon = {
-		string = "􀧓",
-		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
-	},
-	label = { padding_right = 0 },
-})
+-- CPU and GPU draw as live graphs (one sample per tick, 0..1) with
+-- the current percentage beside them. GPU load is ioreg's "Device
+-- Utilization %" of the Apple GPU: no sudo, ~20 ms a read.
+local graph_width = 140
 
-local function cpu_update()
-	SBAR.exec("ps -A -o %cpu | awk '{s+=$1} END {print s}'", function(total_load)
-		local load = tonumber(total_load) or 0
-		local used = math.floor(load / core_count)
-		local color = (used > 80 and 0xffff4444) or (used > 60 and 0xffffa500) or nil
-		cpu:set({
-			icon = { color = color or DEFAULT_ITEM.icon.color },
-			label = { string = math.floor(used) .. "%", color = color or DEFAULT_ITEM.label.color },
-		})
-	end)
+-- CPU, GPU and RAM as compact "icon NN%" items in the bar. A click on
+-- any of them opens a popup (like the pomodoro's) with a line graph
+-- per metric (one sample per tick, 0..1); the graphs record while the
+-- popup is closed, so they open with history. GPU load is ioreg's
+-- "Device Utilization %" of the Apple GPU: no sudo, ~20 ms a read.
+local popup_anchor = "cpu"
+
+local function load_color(used)
+	return (used > 80 and COLORS.red) or (used > 60 and COLORS.orange) or nil
 end
 
-cpu:subscribe("routine", cpu_update)
+local metrics = {}
 
--- ==========================================================
--- RAM / MEMORY INDICATOR
--- ==========================================================
+local function add_metric(name, icon, update_freq, command, parse)
+	local compact = SBAR.add("item", name, {
+		position = "left",
+		icon = { string = icon, padding_right = DEFAULT_ITEM.icon.padding_right * 0.5 },
+		label = { string = "0%", padding_right = 0 },
+	})
+	local graph = SBAR.add("graph", name .. ".graph", graph_width, {
+		position = "popup." .. popup_anchor,
+		graph = {
+			color = COLORS.accent_color,
+			fill_color = 0x00000000, -- line only, no filled area
+			line_width = 1.5,
+		},
+		-- The graph spans the icon's own band, centred on its line, so
+		-- 0% sits level with the icon's bottom and 100% with its top.
+		background = {
+			height = 16,
+			y_offset = DEFAULT_ITEM.icon.y_offset,
+			drawing = true,
+			color = 0x00000000,
+			border_width = 0,
+		},
+		icon = { string = icon, padding_left = 10, padding_right = 6 },
+		label = {
+			string = "0%",
+			padding_left = 6,
+			padding_right = 10,
+			width = 44,
+			align = "right",
+		},
+	})
 
-local memory = SBAR.add("item", "memory", {
-	position = "left",
-	update_freq = 5,
-	icon = {
-		string = "􀫦",
-		padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
-	},
-	label = { padding_right = 0 },
-})
+	local function update()
+		SBAR.exec(command, function(result)
+			local used = math.max(0, math.min(parse(result), 100))
+			local color = load_color(used)
+			local icon_color = color or DEFAULT_ITEM.icon.color
+			local label = { string = math.floor(used) .. "%", color = color or DEFAULT_ITEM.label.color }
+			graph:push({ used / 100 })
+			compact:set({ icon = { color = icon_color }, label = label })
+			graph:set({ icon = { color = icon_color }, label = label })
+		end)
+	end
 
-local function memory_update()
-	SBAR.exec("memory_pressure | grep 'System-wide memory free percentage:' | awk '{print 100-$5}'", function(result)
-		local used = tonumber(result) or 0
-		local color = (used > 80 and 0xffff4444) or (used > 60 and 0xffffa500) or nil
-		memory:set({
-			icon = { color = color or DEFAULT_ITEM.icon.color },
-			label = { string = math.floor(used) .. "%", color = color or DEFAULT_ITEM.label.color },
-		})
-	end)
+	-- One clock per metric, on the compact item: it ticks whether or
+	-- not the graph is drawn.
+	compact:set({ update_freq = update_freq })
+	compact:subscribe("routine", update)
+	table.insert(metrics, { compact = compact, graph = graph, update = update })
+	return compact, graph
 end
 
-memory:subscribe("routine", memory_update)
+local function toggle_popup()
+	local anchor = metrics[1].compact
+	local open = anchor:query().popup.drawing == "on"
+	anchor:set({ popup = { drawing = not open } })
+end
+
+add_metric("cpu", "􀧓", 2, "ps -A -o %cpu | awk '{s+=$1} END {print s}'", function(r)
+	return (tonumber(r) or 0) / core_count
+end)
+add_metric(
+	"gpu",
+	"󰢮",
+	2,
+	[[ioreg -r -d 1 -c IOAccelerator | grep -o '"Device Utilization %"=[0-9]*' | head -1 | cut -d= -f2]],
+	function(r)
+		return tonumber(r) or 0
+	end
+)
+add_metric(
+	"memory",
+	"􀫦",
+	5,
+	"memory_pressure | grep 'System-wide memory free percentage:' | awk '{print 100-$5}'",
+	function(r)
+		return tonumber(r) or 0
+	end
+)
+
+metrics[1].compact:set({ popup = { align = "left" } })
+-- Click, not hover: sketchybar reports leaving the bar but not
+-- leaving a popup, so a hover-opened popup left downward stays open.
+for _, m in ipairs(metrics) do
+	m.compact:subscribe("mouse.clicked", toggle_popup)
+	m.graph:subscribe("mouse.clicked", toggle_popup)
+end
+metrics[1].compact:subscribe("mouse.exited.global", function()
+	metrics[1].compact:set({ popup = { drawing = false } })
+end)
 
 -- ==========================================================
 -- NETWORK INDICATOR (Stacked Up/Down)
@@ -153,6 +211,7 @@ network_up:subscribe("routine", network_update)
 -- Wrap CPU, RAM, and Network into one single bracket
 SBAR.add("bracket", "resources.bracket", {
 	"cpu",
+	"gpu",
 	"memory",
 	"network_up", -- Top part of stack
 	"network_down", -- Bottom part of stack (defines the width)
@@ -164,6 +223,17 @@ SBAR.add("bracket", "resources.bracket", {
 -- FORCE INITIAL UPDATES
 -- ==========================================================
 -- Call these immediately so we don't wait 2-5s for the first numbers
-cpu_update()
-memory_update()
+for _, m in ipairs(metrics) do
+	m.update()
+end
 network_update()
+
+THEME.on_change(function()
+	for _, m in ipairs(metrics) do
+		m.graph:set({ graph = { color = COLORS.accent_color } })
+		m.update()
+	end
+	for _, item in ipairs({ network_up, network_down }) do
+		item:set({ icon = { color = COLORS.disabled_color, highlight_color = COLORS.accent_color } })
+	end
+end)
