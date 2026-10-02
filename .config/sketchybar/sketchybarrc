@@ -1,4 +1,9 @@
-#!/opt/homebrew/opt/lua@5.5/bin/lua
+#!/usr/bin/env -S PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin /opt/homebrew/opt/lua@5.5/bin/lua
+
+-- The shebang sets PATH: as a brew service, sketchybar runs with
+-- launchd's minimal PATH, which lacks Homebrew, so `tailscale`,
+-- `kiwidesk`, `ifstat` and `sketchybar` itself were not found from
+-- the bar's commands.
 
 -- Rebuilds the SbarLua module if the sketchybar binary is newer than
 -- the compiled .so (or the .so is missing).
