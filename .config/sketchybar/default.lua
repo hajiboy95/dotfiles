@@ -1,7 +1,11 @@
 local border_width = 1
 local corner_raduis = 15
 local item_padding = 10
-local height = 25
+-- The bar matches the menu bar under the notch (32 pt on this
+-- MacBook, NSScreen.safeAreaInsets.top) so it covers it fully; the
+-- pills take nearly all of it, so they end level with the notch.
+local bar_height = 32
+local height = bar_height - 2 -- item pill height
 local size = 13.5
 -- Define default item properties
 local default_item = {
@@ -11,7 +15,7 @@ local default_item = {
 			family = "Hack Nerd Font",
 			size = size,
 		},
-		color = COLORS.accent_color,
+		color = COLORS.text_color,
 		padding_left = item_padding,
 		padding_right = item_padding,
 		y_offset = 1,
@@ -23,7 +27,7 @@ local default_item = {
 			style = "Semibold",
 			size = size,
 		},
-		color = COLORS.accent_color,
+		color = COLORS.text_color,
 		padding_right = item_padding,
 	},
 	background = {
@@ -33,12 +37,16 @@ local default_item = {
 		corner_radius = corner_raduis,
 		height = height,
 	},
+	-- Popups wear the pills' border and a strong blur, over the theme's
+	-- dark base at 50%: the pill colour alone (0x20 white in Liquid
+	-- Glass) leaves white text unreadable over a white window.
 	popup = {
+		blur_radius = 60,
 		background = {
 			corner_radius = corner_raduis,
-			color = COLORS.popup_background,
+			color = LOOK.with_alpha(COLORS.popup_background, 0x80),
 			border_width = border_width,
-			border_color = COLORS.popup_border,
+			border_color = COLORS.background_border,
 		},
 	},
 }
@@ -48,8 +56,11 @@ SBAR.default({ background = { drawing = false } })
 -- Add Bar
 SBAR.bar({
 	-- position = "top",
-	height = height,
-	blur_radius = 30,
+	height = bar_height,
+	-- Transparent: only the item pills draw; the wallpaper shows
+	-- between them.
+	color = 0x00000000,
+	blur_radius = 0,
 })
 
 return default_item

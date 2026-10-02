@@ -1,6 +1,3 @@
-local config_dir = os.getenv("CONFIG_DIR")
-local theme_file = config_dir .. "/helpers/active_theme.txt"
-
 -- 1. The Trigger Item (The anchor for the popup)
 local picker_trigger = SBAR.add("item", "theme_picker", {
 	position = "right",
@@ -19,47 +16,66 @@ for name, _ in pairs(COLORS.all_schemes) do
 end
 table.sort(sorted_scheme_names) -- Sorts the table A-Z
 
--- 3. Create the Popup Content
--- We iterate through all schemes and add them as popup items
+-- 3. Create the Popup Content. A pick switches live (helpers/theme):
+-- COLORS swap in place and every item recolours, no reload.
+local dots = {}
+
+local function is_active(name)
+	return COLORS.active_scheme_name == name
+end
+
+local function paint_dot(name)
+	local active = is_active(name)
+	dots[name]:set({
+		icon = { string = active and "􀃳" or "􀀁", color = COLORS.all_schemes[name].accent_color },
+		-- The tick and the colour mark the active theme (a custom font
+		-- may have no bold).
+		label = { color = active and COLORS.accent_color or COLORS.disabled_color },
+	})
+end
+
 for _, scheme_name in ipairs(sorted_scheme_names) do
 	local scheme = COLORS.all_schemes[scheme_name]
-	local is_active = (COLORS.active_scheme_name == scheme_name) -- Check if this is the current theme
-	-- Define the click script ONLY if it's not the active one
-	local script
-	if not is_active then
-		script = "echo '" .. scheme_name .. "' > " .. theme_file .. " && sketchybar --reload"
-	else
-		-- If already active, just close the popup when clicked
-		script = "sketchybar --set " .. picker_trigger.name .. " popup.drawing=off"
-	end
 	local dot = SBAR.add("item", "theme.dot." .. scheme_name, {
 		position = "popup." .. picker_trigger.name,
-		icon = {
-			string = is_active and "􀃳" or "􀀁", -- Checkmark circle vs solid circle
-			color = scheme.accent_color,
-		},
 		label = {
-			string = scheme_name:gsub("_", " "):gsub("^%l", string.upper), -- Capitalize name
-			color = is_active and COLORS.accent_color or COLORS.disabled_color,
-			font = { style = is_active and "Bold" or "Regular" },
+			string = scheme.label or scheme_name:gsub("_", " "):gsub("^%l", string.upper),
+			font = LOOK.word_font(),
 		},
-		click_script = script,
 	})
+	dots[scheme_name] = THEME.track_word(dot)
+	paint_dot(scheme_name)
 
-	-- Hover effect for the popup items
+	-- Picking the active theme re-sends it to KiwiDesk (e.g. after
+	-- KiwiDesk's own colours were changed).
+	dot:subscribe("mouse.clicked", function()
+		picker_trigger:set({ popup = { drawing = false } })
+		THEME.apply(scheme_name)
+	end)
 	dot:subscribe("mouse.entered", function()
-		dot:set({
-			label = { color = COLORS.accent_color },
-			background = { drawing = true },
-		})
+		dot:set({ label = { color = COLORS.accent_color }, background = { drawing = true } })
 	end)
 	dot:subscribe("mouse.exited", function()
 		dot:set({
-			label = { color = is_active and COLORS.accent_color or COLORS.disabled_color },
+			label = { color = is_active(scheme_name) and COLORS.accent_color or COLORS.disabled_color },
 			background = { drawing = false },
 		})
 	end)
 end
+
+-- Scriptable too: `sketchybar --trigger theme_set THEME=<name>`.
+SBAR.add("event", "theme_set")
+picker_trigger:subscribe("theme_set", function(env)
+	if env.THEME and COLORS.all_schemes[env.THEME] then
+		THEME.apply(env.THEME)
+	end
+end)
+
+THEME.on_change(function()
+	for name in pairs(dots) do
+		paint_dot(name)
+	end
+end)
 
 -- 3. Toggle Logic
 -- Clicking the trigger shows/hides the popup

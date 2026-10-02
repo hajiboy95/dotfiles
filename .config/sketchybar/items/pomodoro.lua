@@ -25,8 +25,8 @@ local timer = SBAR.add("item", "pomodoro", {
 local function stop_timer()
 	active_timer_end = nil
 	timer:set({
-		icon = { padding_right = DEFAULT_ITEM.icon.padding_right },
-		label = { drawing = false },
+		icon = { padding_right = DEFAULT_ITEM.icon.padding_right, color = COLORS.text_color },
+		label = { drawing = false, color = COLORS.text_color },
 		update_freq = 0,
 		popup = { drawing = false },
 	})
@@ -81,15 +81,17 @@ timer:subscribe("routine", function()
 	local tight_padding = DEFAULT_ITEM.icon.padding_right * 0.5
 
 	if remaining > 0 then
+		-- Running: the active thing, so accent (like a playing track).
 		timer:set({
-			icon = { padding_right = tight_padding },
-			label = { string = format_time(remaining), drawing = true },
+			icon = { padding_right = tight_padding, color = COLORS.accent_color },
+			label = { string = format_time(remaining), drawing = true, color = COLORS.accent_color },
 		})
 	else
 		active_timer_end = nil
+		-- Done: needs attention until the next start or a stop.
 		timer:set({
-			icon = { padding_right = tight_padding },
-			label = { string = "Done!" },
+			icon = { padding_right = tight_padding, color = COLORS.orange },
+			label = { string = "Done!", color = COLORS.orange },
 			update_freq = 0,
 		})
 
@@ -113,10 +115,12 @@ for _, mins in ipairs(presets) do
 			padding_left = DEFAULT_ITEM.icon.padding_left,
 			padding_right = DEFAULT_ITEM.icon.padding_right,
 			string = string.format("%2d Minutes", mins),
+			font = LOOK.word_font(),
 		},
 		icon = { drawing = false },
 	})
 
+	THEME.track_word(p)
 	p:subscribe("mouse.clicked", function()
 		start_timer(mins * 60)
 	end)
@@ -136,11 +140,13 @@ local custom = SBAR.add("item", "timer.custom", {
 	icon = { drawing = false },
 	label = {
 		string = "Custom...",
+		font = LOOK.word_font(),
 		padding_left = DEFAULT_ITEM.icon.padding_left,
 		padding_right = DEFAULT_ITEM.icon.padding_right,
 	},
 })
 
+THEME.track_word(custom)
 custom:subscribe("mouse.clicked", function()
 	timer:set({ popup = { drawing = false } })
 	open_custom_settimer()
@@ -170,4 +176,15 @@ end)
 -- Event Handling
 timer:subscribe({ "mouse.exited.global" }, function()
 	timer:set({ popup = { drawing = false } })
+end)
+
+-- Recolour for the state the timer is in: running repaints itself
+-- every second; idle and "Done!" are set here.
+THEME.on_change(function()
+	if active_timer_end then
+		return
+	end
+	local done = timer:query().label.value == "Done!"
+	local color = done and COLORS.orange or COLORS.text_color
+	timer:set({ icon = { color = color }, label = { color = color } })
 end)

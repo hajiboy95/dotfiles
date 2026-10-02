@@ -31,14 +31,14 @@ for i = 1, max_items do
 		width = 0,
 		icon = { drawing = false },
 		label = {
-			font = { style = "Semibold" },
+			font = LOOK.word_font(),
 			padding_left = DEFAULT_ITEM.icon.padding_left,
 			y_offset = 0,
 		},
 		click_script = menu_bin .. " -s " .. i,
 	})
 
-	menu_items[i] = item
+	menu_items[i] = THEME.track_word(item)
 	-- Add each menu item to bracket list
 	table.insert(menu_items_list, item.name)
 end
@@ -160,7 +160,7 @@ for i = 1, max_items do
 	menu_items[i]:subscribe("mouse.entered", function()
 		mouse_on_menu = true
 		menu_items[i]:set({
-			label = { font = { style = "Bold" }, color = COLORS.accent_color },
+			label = { font = LOOK.word_font(), color = COLORS.accent_color },
 		})
 		update_state()
 	end)
@@ -168,7 +168,7 @@ for i = 1, max_items do
 	menu_items[i]:subscribe("mouse.exited", function()
 		mouse_on_menu = false
 		menu_items[i]:set({
-			label = { font = { style = "Semibold" }, color = COLORS.disabled_color },
+			label = { font = LOOK.word_font(), color = COLORS.disabled_color },
 		})
 		update_state()
 	end)

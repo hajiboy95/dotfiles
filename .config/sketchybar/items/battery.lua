@@ -19,7 +19,7 @@ local function battery_update()
 			local is_charging = batt_info:find("AC Power")
 
 			-- 1. COLOR & LABEL LOGIC
-			local color = COLORS.accent_color
+			local color = COLORS.text_color
 			local should_draw_label = false
 
 			if charge_num < 10 then
@@ -34,7 +34,9 @@ local function battery_update()
 			local icon
 			if is_charging then
 				icon = ""
-				color = (charge_num < 20) and COLORS.charging or DEFAULT_ITEM.icon.color
+				-- Charging is in progress: the active colour. Low is no
+				-- longer urgent while plugged in.
+				color = COLORS.accent_color
 				should_draw_label = false
 			else
 				if charge_num > 90 then
@@ -82,3 +84,5 @@ battery:subscribe("mouse.exited", function()
 end)
 
 battery:subscribe({ "routine", "power_source_change", "system_woke" }, battery_update)
+
+THEME.on_change(battery_update)
