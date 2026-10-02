@@ -17,6 +17,9 @@ local volume_slider = SBAR.add("slider", 100, {
 		background = {
 			height = 6,
 			corner_radius = 3,
+			-- The track: a faint wash of the idle colour, not
+			-- sketchybar's default black.
+			color = LOOK.with_alpha(COLORS.disabled_color, 0x40),
 		},
 		knob = {
 			string = "􀀁",
@@ -47,7 +50,11 @@ volume_slider:subscribe("mouse.clicked", function(env)
 end)
 
 volume_slider:subscribe("volume_change", function(env)
+	-- INFO is empty for some devices (e.g. a muted HDMI output).
 	local volume = tonumber(env.INFO)
+	if not volume then
+		return
+	end
 	local icon = icons._0
 	if volume > 60 then
 		icon = icons._100
@@ -89,3 +96,25 @@ volume_icon:subscribe("mouse.clicked", function(env)
 		animate_slider_width(100)
 	end
 end)
+
+THEME.on_change(function()
+	volume_slider:set({
+		slider = {
+			highlight_color = COLORS.accent_color,
+			background = { color = LOOK.with_alpha(COLORS.disabled_color, 0x40) },
+		},
+	})
+end)
+
+-- Scroll on the icon or the slider: volume up/down in 5% steps (the
+-- slider and icon follow through volume_change).
+local function on_scroll(env)
+	local delta = tonumber(env.SCROLL_DELTA) or 0
+	if delta == 0 then
+		return
+	end
+	local step = delta > 0 and 5 or -5
+	SBAR.exec("osascript -e 'set volume output volume ((output volume of (get volume settings)) + " .. step .. ")'")
+end
+volume_icon:subscribe("mouse.scrolled", on_scroll)
+volume_slider:subscribe("mouse.scrolled", on_scroll)
