@@ -1,31 +1,39 @@
--- KiwiDesk config (init.lua)
+-- KiwiDesk configuration
+-- Docs: https://github.com/KiwiCanopy/KiwiDesk
 --
--- Settings are GUI-managed (gui.json) — the Settings app owns
--- gaps, layouts, keybindings, rules, etc. This file carries only
--- the behavioral glue the GUI can't express: event hooks.
---
--- Event hooks run regardless of GUI management: the structured
--- loader resets the managed *binds* block, but KiwiDesk.on hooks
--- still fire.
+-- Everyday settings live in the Settings window;
+-- this file is for optional custom Lua. Comments
+-- only by default — the built-in defaults apply
+-- until a line below is uncommented.
 
--- ==========================================================
--- SKETCHYBAR BRIDGE
--- ==========================================================
--- KiwiDesk never triggers sketchybar itself. These hooks fire
--- the custom `kiwidesk_update` event that the spaces widget
--- (items/spaces.lua) subscribes to; its handler re-queries full
--- state via `get_state`, so any state-changing event just needs
--- to poke it once.
-for _, event in ipairs({
-	"space_change",
-	"layout_change",
-	"focus_change",
-	"native_space_change",
-	"window_created",
-	"window_destroyed",
-	"window_moved_to_space",
-}) do
-	KiwiDesk.on(event, function()
-		KiwiDesk.exec("sketchybar --trigger kiwidesk_update")
-	end)
-end
+-- One value for all gaps (the built-in default):
+-- KiwiDesk.set_gap_global(10)
+
+-- Every Space has its own layout; the first
+-- argument is the SPACE id (number or name),
+-- never a monitor. All Spaces
+-- default to "bsp". Modes: bsp | stack |
+-- scrolling | monocle | grid | floating
+-- KiwiDesk.set_mode(1, "stack")
+-- KiwiDesk.set_mode("music", "floating")
+
+-- Windows that should never be tiled:
+-- float_rules = { "com.apple.calculator" }
+
+-- Apps KiwiDesk should never manage at all:
+-- ignore_rules = { "eu.exelban.Stats" }
+
+-- Send apps to fixed Spaces:
+-- app_rules = {
+--   ["com.spotify.client"] = "music"
+-- }
+
+-- Load a saved profile per macOS Desktop
+-- (the Mission Control number):
+-- KiwiDesk.bind_profile_to_desktop(
+--     2, "Creator Studio")
+
+-- Keybindings:
+-- KiwiDesk.bind("cmd+alt+left", function()
+--     KiwiDesk.focus("left")
+-- end)
