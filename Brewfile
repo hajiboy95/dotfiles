@@ -71,10 +71,10 @@ brew "zoxide"
 brew "zsh-syntax-highlighting"
 # The AI coding agent built for the terminal.
 brew "anomalyco/tap/opencode", trusted: true
-# A window border system for macOS
-brew "felixkratz/formulae/borders", trusted: true
 # Custom macOS statusbar with shell plugin, interaction and graph support
 brew "felixkratz/formulae/sketchybar", trusted: true
+# Control and observe media playback from the command line
+brew "ungive/media-control/media-control"
 # Stripe CLI utility
 brew "stripe/stripe-cli/stripe"
 # Android SDK component
@@ -87,8 +87,6 @@ cask "anki"
 cask "antigravity"
 # Display management tool
 cask "betterdisplay"
-# Desktop password and login vault
-cask "bitwarden"
 # Terminal-based AI coding assistant
 cask "claude-code"
 # App to build and share containerised applications and microservices
