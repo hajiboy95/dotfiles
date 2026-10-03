@@ -6,9 +6,6 @@
 .venv/
 **/bin/
 
-# Ignore clipboard storage
-**/.clipboard_storage.json
-
 # Exceptions
 !.config/sketchybar/
 !.config/sketchybar_bash/
