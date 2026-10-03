@@ -3,13 +3,7 @@
 # Theme: Solarized Osaka Night
 
 # Keybinds
-keybind = ctrl+cmd+opt+v=new_split:right
-keybind = ctrl+cmd+opt+h=new_split:down
-keybind = global:ctrl+cmd+opt+space=toggle_quick_terminal
-keybind = ctrl+cmd+opt+left=goto_split:left
-keybind = ctrl+cmd+opt+right=goto_split:right
-keybind = ctrl+cmd+opt+up=goto_split:top
-keybind = ctrl+cmd+opt+down=goto_split:bottom
+keybind = global:alt+t=toggle_quick_terminal
 
 # Quick-terminal
 quick-terminal-position = center
