@@ -14,7 +14,7 @@ local logo = app_icon(":spotify:", "\u{f1bc}", DEFAULT_ITEM.icon.font.size * 1.2
 
 local spotify_anchor = SBAR.add("item", "spotify", {
 	position = "right",
-	update_freq = 10, -- notices a quit Spotify (no event for that)
+	update_freq = 10, -- re-reads the player (see "routine" below)
 	icon = {
 		font = logo.font or { size = DEFAULT_ITEM.icon.font.size * 1.2 },
 		string = logo.string,
@@ -136,15 +136,10 @@ spotify_anchor:subscribe("mouse.clicked", function(env)
 	end
 end)
 
--- Quitting Spotify posts no change on every version, so a cheap
--- pgrep every 10 s (and on wake) turns the item back to idle.
-spotify_anchor:subscribe({ "routine", "system_woke" }, function()
-	SBAR.exec("pgrep -xq Spotify || echo closed", function(result)
-		if result:find("closed") then
-			render("Stopped")
-		end
-	end)
-end)
+-- Spotify posts no change when it quits, and none for playback on
+-- another device (Spotify Connect) or after an ad, so the label went
+-- stale. A full re-read every 10 s (and on wake) catches all three.
+spotify_anchor:subscribe({ "routine", "system_woke" }, read_player)
 
 read_player()
 
