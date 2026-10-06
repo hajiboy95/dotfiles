@@ -40,7 +40,7 @@ local function truncate(text)
 end
 
 -- state: "Playing" | "Paused" | anything else is idle: the logo
--- alone, dimmed, and a click opens Spotify.
+-- alone, dimmed, and a right click opens Spotify.
 local last = {}
 local function render(state, title, artist)
 	last = { state, title, artist }
@@ -100,6 +100,11 @@ else:
 	)
 end
 
+-- The mini player (cover, time, previous / play-pause / next). It
+-- re-reads on the same events as the label, so the cover is fetched
+-- before the popup opens.
+local player
+
 SBAR.add("event", "spotify_change", "com.spotify.client.PlaybackStateChanged")
 spotify_anchor:subscribe("spotify_change", function(env)
 	local info = env.INFO
@@ -108,6 +113,7 @@ spotify_anchor:subscribe("spotify_change", function(env)
 	else
 		read_player() -- Payload not parsed: ask instead.
 	end
+	player.refresh()
 end)
 
 -- A Spotify command: through media-control while Spotify is the
@@ -125,21 +131,23 @@ local function control(mc, verb)
 	)
 end
 
--- Left click: play/pause. Right click: the mini player (cover, time,
--- previous / play-pause / next).
-local player = require("items.spotify_popup")(spotify_anchor, control)
+-- Left click: the mini player. Right click: next track.
+player = require("items.spotify_popup")(spotify_anchor, control)
 spotify_anchor:subscribe("mouse.clicked", function(env)
 	if env.BUTTON == "right" then
-		player.toggle()
+		control("next-track", "next track")
 	else
-		control("toggle-play-pause", "playpause")
+		player.toggle()
 	end
 end)
 
 -- Spotify posts no change when it quits, and none for playback on
 -- another device (Spotify Connect) or after an ad, so the label went
 -- stale. A full re-read every 10 s (and on wake) catches all three.
-spotify_anchor:subscribe({ "routine", "system_woke" }, read_player)
+spotify_anchor:subscribe({ "routine", "system_woke" }, function()
+	read_player()
+	player.refresh()
+end)
 
 read_player()
 
