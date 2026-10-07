@@ -38,7 +38,8 @@ local function add_metric(name, icon, update_freq, command, parse)
 		position = "popup." .. popup_anchor,
 		graph = {
 			color = COLORS.accent_color,
-			fill_color = 0x00000000, -- line only, no filled area
+			-- Faint wash under the line: its bottom edge marks 0%.
+			fill_color = LOOK.with_alpha(COLORS.accent_color, 0x26),
 			line_width = 1.5,
 		},
 		-- The graph spans the icon's own band, centred on its line, so
@@ -60,13 +61,29 @@ local function add_metric(name, icon, update_freq, command, parse)
 		},
 	})
 
+	-- Sketchybar's graph_draw starts its path at the oldest sample
+	-- (y[cursor]) at the left edge, then jumps to the newest there: a
+	-- vertical stroke down to whatever is oldest, 0 after a reload. So
+	-- keep the window here and re-push it whole each tick. A pushed
+	-- table reads left to right (oldest to newest, so "now" sits beside
+	-- the label), and its last entry fills that start slot: the leftmost
+	-- sample again, so the stroke vanishes.
+	local history = {}
+	for i = 1, graph_width - 1 do
+		history[i] = 0
+	end
+
 	local function update()
 		SBAR.exec(command, function(result)
 			local used = math.max(0, math.min(parse(result), 100))
 			local color = load_color(used)
 			local icon_color = color or DEFAULT_ITEM.icon.color
 			local label = { string = math.floor(used) .. "%", color = color or DEFAULT_ITEM.label.color }
-			graph:push({ used / 100 })
+			table.remove(history, 1)
+			table.insert(history, used / 100)
+			local window = { table.unpack(history) }
+			window[#window + 1] = history[1]
+			graph:push(window)
 			compact:set({ icon = { color = icon_color }, label = label })
 			graph:set({ icon = { color = icon_color }, label = label })
 		end)
@@ -230,7 +247,12 @@ network_update()
 
 THEME.on_change(function()
 	for _, m in ipairs(metrics) do
-		m.graph:set({ graph = { color = COLORS.accent_color } })
+		m.graph:set({
+			graph = {
+				color = COLORS.accent_color,
+				fill_color = LOOK.with_alpha(COLORS.accent_color, 0x26),
+			},
+		})
 		m.update()
 	end
 	for _, item in ipairs({ network_up, network_down }) do
