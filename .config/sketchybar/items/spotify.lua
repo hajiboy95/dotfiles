@@ -71,7 +71,9 @@ local function render(state, title, artist)
 		icon = {
 			string = logo.string,
 			color = playing and COLORS.accent_color or COLORS.disabled_color,
-			padding_right = DEFAULT_ITEM.icon.padding_right,
+			-- Half the pill's edge padding, as battery and pomodoro: the
+			-- logo and its label read as one unit, not two.
+			padding_right = DEFAULT_ITEM.icon.padding_right * 0.5,
 		},
 	})
 end
