@@ -79,8 +79,9 @@ Colour carries state, the same way in every theme: the accent means
 on or playing, plain text is information, dimmed is off, and
 orange/red needs attention.
 
-Three small helpers in Swift and C read what Lua cannot: the front
-app's menus, your calendar and a font's real style names. They are
+Four small helpers in Swift and C read what Lua cannot: the front
+app's menus, your calendar, a font's real style names and where the
+mouse is inside a popup item. They are
 built on load with `make`, so a fresh clone needs no extra step.
 
 ### KiwiDesk

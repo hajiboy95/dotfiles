@@ -4,6 +4,7 @@ require("globals")
 -- binary is up to date.
 os.execute('cd "$CONFIG_DIR/helpers/menus" && make >/dev/null 2>&1')
 os.execute('cd "$CONFIG_DIR/helpers/events" && make >/dev/null 2>&1')
+os.execute('cd "$CONFIG_DIR/helpers/mouse" && make >/dev/null 2>&1')
 -- 1. Setup Bar and Defaults
 SBAR.begin_config() -- Pauses redraw for faster loading
 

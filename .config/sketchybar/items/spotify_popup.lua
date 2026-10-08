@@ -123,6 +123,31 @@ return function(anchor, control)
 		},
 		label = { drawing = false },
 	})
+	-- The visible strip: 5 pt, 6 pt while the mouse is on the hit
+	-- area. It takes no clicks: `hit` lies on top.
+	local track_height, track_height_hover = 5, 6
+	local hit_height = 20 -- pt
+	-- The knob: a white capsule with a soft shadow, as in macOS
+	-- sliders (and KiwiDesk's settings); larger while hovered.
+	local knob_w, knob_h = 14, 9 -- pt
+	local knob_w_hover, knob_h_hover = 18, 11 -- pt
+	local function knob_style(on)
+		local w, h = on and knob_w_hover or knob_w, on and knob_h_hover or knob_h
+		return {
+			drawing = true,
+			string = "",
+			width = w,
+			background = {
+				drawing = true,
+				height = h,
+				corner_radius = h / 2,
+				color = 0xffffffff,
+				border_width = 1,
+				border_color = 0x1a000000,
+				shadow = { drawing = true, color = 0x33000000, distance = 1, angle = 90 },
+			},
+		}
+	end
 	local volume = SBAR.add("slider", "spotify.volume", slider_width, {
 		position = popup,
 		y_offset = volume_y,
@@ -132,14 +157,30 @@ return function(anchor, control)
 		slider = {
 			highlight_color = COLORS.accent_color,
 			background = {
-				height = 4,
-				corner_radius = 2,
+				height = track_height,
+				corner_radius = track_height / 2,
 				color = LOOK.with_alpha(COLORS.disabled_color, 0x40),
 			},
+			knob = knob_style(false),
+		},
+	})
+	-- An invisible slider over the strip, hit_height tall. sketchybar
+	-- takes a slider's click only inside its strip, so this one's
+	-- strip is the hit area. Negative padding puts it on the visible
+	-- one; added later, it gets the clicks.
+	local hit = SBAR.add("slider", "spotify.volume.hit", slider_width, {
+		position = popup,
+		y_offset = volume_y,
+		padding_left = -(slider_width + 10),
+		padding_right = 10,
+		label = { drawing = false },
+		icon = { drawing = false },
+		slider = {
+			highlight_color = 0x00000000,
+			background = { height = hit_height, color = 0x00000000 },
 			knob = { drawing = false },
 		},
 	})
-	-- The last volume above 0, for the speaker's unmute.
 	local current_volume, unmuted_volume = 0, 50
 	local function show_volume(percent)
 		percent = math.max(0, math.min(100, math.floor(tonumber(percent) or 0)))
@@ -167,7 +208,7 @@ return function(anchor, control)
 	local function read_volume()
 		volume_script("sound volume")
 	end
-	volume:subscribe("mouse.clicked", function(env)
+	hit:subscribe("mouse.clicked", function(env)
 		local percent = tonumber(env.PERCENTAGE)
 		if percent then
 			show_volume(percent)
@@ -186,13 +227,73 @@ return function(anchor, control)
 			volume_script("set sound volume to (sound volume) " .. (delta > 0 and "+ 5" or "- 5"))
 		end
 	end
-	volume:subscribe("mouse.scrolled", on_scroll)
+	hit:subscribe("mouse.scrolled", on_scroll)
 	speaker:subscribe("mouse.scrolled", on_scroll)
 	speaker:subscribe("mouse.entered", function()
 		speaker:set({ icon = { color = COLORS.text_color } })
 	end)
 	speaker:subscribe("mouse.exited", function()
 		speaker:set({ icon = { color = COLORS.disabled_color } })
+	end)
+	-- Hover. sketchybar sends mouse.entered / exited for the item's
+	-- whole window, the full popup height, so helpers/mouse watches
+	-- the mouse while it is in that window and reports when it
+	-- crosses the hit area. While a drag that started there goes on, it
+	-- moves the visible slider along, as the one being dragged is `hit`.
+	local band_helper = config_dir .. "/helpers/mouse/bin/mouse_band"
+	local watch_id, hovered = 0, false
+	local function hover_volume(on)
+		hovered = on
+		local height = on and track_height_hover or track_height
+		volume:set({
+			slider = {
+				background = {
+					height = height,
+					corner_radius = height / 2,
+					color = LOOK.with_alpha(COLORS.disabled_color, on and 0x70 or 0x40),
+				},
+				knob = knob_style(on),
+			},
+		})
+		speaker:set({ icon = { color = on and COLORS.text_color or COLORS.disabled_color } })
+	end
+	local function watch_band(id)
+		local rects = hit:query().bounding_rects or {}
+		local _, rect = next(rects)
+		if not rect or id ~= watch_id then
+			return
+		end
+		local x, y = rect.origin[1], rect.origin[2]
+		local w, h = rect.size[1], rect.size[2]
+		local band_y = y + h / 2 - volume_y - hit_height / 2
+		SBAR.exec(
+			string.format(
+				"%q %f %f %f %f %f %f %f %f %d %s",
+				band_helper, x, band_y, w, hit_height, x, y, w, h, hovered and 1 or 0, volume.name
+			),
+			function(result)
+				if id ~= watch_id then
+					return
+				end
+				result = result:gsub("%s+", "")
+				if result == "in" or result == "out" then
+					hover_volume(result == "in")
+					watch_band(id)
+				elseif result == "timeout" then
+					watch_band(id)
+				else
+					hover_volume(false)
+				end
+			end
+		)
+	end
+	hit:subscribe("mouse.entered", function()
+		watch_id = watch_id + 1
+		watch_band(watch_id)
+	end)
+	hit:subscribe("mouse.exited", function()
+		watch_id = watch_id + 1
+		hover_volume(false)
 	end)
 
 	-- The transport, a column of its own at the right, vertically
@@ -231,13 +332,14 @@ return function(anchor, control)
 	button("prev", "󰒮", 18, 24, "previous-track", "previous track")
 	local play = button("play", "󰐊", 24, 30, "toggle-play-pause", "playpause")
 	button("next", "󰒭", 18, 24, "next-track", "next track")
-	-- Play / pause turns accent while paused, as a "resume" cue.
+	-- Play / pause wears the accent while playing (the accent means
+	-- on or playing), plain text while paused.
 	local is_playing = false
 	local function paint_play()
 		play:set({
 			icon = {
 				string = is_playing and "󰏤" or "󰐊",
-				color = is_playing and COLORS.text_color or COLORS.accent_color,
+				color = is_playing and COLORS.accent_color or COLORS.text_color,
 			},
 		})
 	end
@@ -352,6 +454,10 @@ if art and sys.argv[1] != track:
 	local function set_open(open)
 		is_open = open
 		anchor:set({ popup = { drawing = open } })
+		if not open then
+			watch_id = watch_id + 1
+			hover_volume(false)
+		end
 		if open then
 			refresh()
 			read_volume()
