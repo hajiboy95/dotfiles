@@ -14,7 +14,6 @@ M.order = { "glass", "strip", "tiler", "neon", "retro", "kiwidesk" }
 
 -- Hack Nerd Font (Material Design) glyphs for the picker.
 M.glyphs = {
-	auto = "󰁨",
 	glass = "󰖌",
 	strip = "󰍴",
 	tiler = "󰋁",

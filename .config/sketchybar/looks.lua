@@ -30,7 +30,8 @@ local schemes = {
 	},
 	teal = {
 		look = "glass", -- default look (helpers/shapes.lua): a cool hue that reads well under glass
-		font = "PT Sans", -- words (numbers and icons stay Hack)
+		font = "PT Sans",
+		swatch = 0xff2cf9ed, -- the picker's dot: its navy accent vanishes on a dark popup -- words (numbers and icons stay Hack)
 		-- Its accent (#001F30) vanishes on KiwiDesk's glass shelf:
 		-- KiwiDesk gets these instead there.
 		kiwi = {
@@ -343,8 +344,9 @@ if kiwi_profile_values then
 end
 
 -- 2c. Looks (helpers/shapes.lua) own the shape, Liquid Glass
--- included; each scheme names its default look, a picked look pins
--- over it (helpers/active_look.txt: a look name, or "auto").
+-- included. The worn look is kept in helpers/active_look.txt; a
+-- colour switch keeps it. Each scheme names a default look, worn
+-- only until a look was ever picked.
 local shapes = require("helpers.shapes")
 shapes.set_own(kiwi_profile_values and kiwi_profile_values.style)
 colors.shapes = shapes
@@ -415,6 +417,7 @@ if f then
 end
 
 active_name = active_name or (schemes.kiwidesk and "kiwidesk") or first_available
+colors.look_pin = colors.look_pin or colors.effective_look(active_name)
 -- 4. Merge. `colors.use` swaps the active scheme IN PLACE (the same
 -- table every module holds as COLORS), so a live theme switch needs
 -- no reload: helpers/theme.lua re-applies the colours afterwards.

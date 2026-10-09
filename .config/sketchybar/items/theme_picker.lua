@@ -1,7 +1,7 @@
 -- THEME PICKER: one popup, two pages (a native submenu).
---   Colour page: every colour scheme, then a "Look" row naming the
---   look worn; scrolling over that row steps through the looks.
---   Look page: back to Colour, Auto (the scheme's own look), the looks.
+--   Colour page: a "Look" row naming the look worn (scrolling over it
+--   steps through the looks), then every colour scheme.
+--   Look page: back to Colour, then the looks.
 -- A pick applies live (helpers/theme) and the popup stays open, so
 -- combinations can be tried. Active rows differ in shape, not only
 -- colour (􀃳 vs 􀀁, ✓), for red-green colour vision.
@@ -60,40 +60,29 @@ local function row(name, page_items)
 	return item
 end
 
--- Section caption: no hover, no click. Every popup row is one
--- height, so a 1 pt divider would still leave a blank row; a caption
--- puts that row to use (as tailscale's EXIT NODE).
-local function caption(name, text, page_items)
-	local item = SBAR.add("item", "theme." .. name, {
-		position = "popup." .. picker_trigger.name,
-		icon = { drawing = false },
-		label = {
-			string = text,
-			font = LOOK.word_font(0.75),
-			padding_left = DEFAULT_ITEM.icon.padding_left,
-		},
-	})
-	THEME.track_word(item, 0.75)
-	table.insert(page_items, item)
-	return item
-end
-
 local colour_page, look_page = {}, {}
-local captions = {}
+
+-- The page switch sits in the first row of both pages, so clicking
+-- the same spot flips back and forth.
+local look_row = row("look_row", colour_page)
+local back_row = row("back", look_page)
 
 -- Colour page
 local dots = {}
 for _, scheme_name in ipairs(sorted_scheme_names) do
 	dots[scheme_name] = row("dot." .. scheme_name, colour_page)
 end
-table.insert(captions, caption("look_caption", "LOOK", colour_page))
-local look_row = row("look_row", colour_page)
 
--- Look page
-local back_row = row("back", look_page)
-local auto_row = row("look.auto", look_page)
-local look_rows = {}
+-- Look page, A-Z like the colours.
+local sorted_look_names = {}
 for _, name in ipairs(shapes.order) do
+	table.insert(sorted_look_names, name)
+end
+table.sort(sorted_look_names, function(a, b)
+	return look_label(a) < look_label(b)
+end)
+local look_rows = {}
+for _, name in ipairs(sorted_look_names) do
 	look_rows[name] = row("look." .. name, look_page)
 end
 
@@ -105,43 +94,30 @@ local function paint()
 		-- variant differs from its opaque one).
 		local resolved = LOOK.resolve(name)
 		dot:set({
-			icon = { string = active and "􀃳" or "􀀁", color = resolved.accent_color },
+			icon = { string = active and "􀃳" or "􀀁", color = resolved.swatch or resolved.accent_color },
 			label = {
 				string = scheme_label(name),
 				color = active and COLORS.accent_color or COLORS.disabled_color,
 			},
 		})
 	end
-	for _, item in ipairs(captions) do
-		item:set({ label = { color = COLORS.disabled_color } })
-	end
-
-	local pinned = COLORS.look_pin
 	look_row:set({
 		icon = { string = shapes.glyphs[COLORS.look], color = COLORS.accent_color },
-		label = {
-			string = look_label(COLORS.look) .. (pinned and "" or " · Auto") .. "  ›",
-			color = COLORS.text_color,
-		},
+		label = { string = "Look · " .. look_label(COLORS.look) .. "  ›", color = COLORS.text_color },
 	})
 	back_row:set({
 		icon = { string = "󰁍", color = COLORS.disabled_color },
 		label = { string = "Colour · " .. scheme_label(active_scheme), color = COLORS.text_color },
 	})
-	local default_look = COLORS.all_schemes[active_scheme].look or "glass"
-	auto_row:set({
-		icon = { string = shapes.glyphs.auto, color = pinned and COLORS.disabled_color or COLORS.accent_color },
-		label = {
-			string = "Auto · " .. look_label(default_look) .. (pinned and "" or "  ✓"),
-			color = pinned and COLORS.disabled_color or COLORS.accent_color,
-		},
-	})
 	for name, item in pairs(look_rows) do
-		local active = pinned == name
+		local active = COLORS.look == name
+		-- ✓ the look in its own palette, (✓) worn with another colour.
+		local own_palette = shapes.palettes[name] == active_scheme
+		local tick = active and (own_palette and "  ✓" or "  (✓)") or ""
 		item:set({
 			icon = { string = shapes.glyphs[name], color = active and COLORS.accent_color or COLORS.disabled_color },
 			label = {
-				string = look_label(name) .. (active and "  ✓" or ""),
+				string = look_label(name) .. tick,
 				color = active and COLORS.accent_color or COLORS.disabled_color,
 			},
 		})
@@ -184,26 +160,20 @@ end)
 back_row:subscribe("mouse.clicked", function()
 	set_page("colour")
 end)
-auto_row:subscribe("mouse.clicked", function()
-	THEME.apply_look("auto")
-end)
 for name, item in pairs(look_rows) do
 	item:subscribe("mouse.clicked", function()
 		THEME.apply_look(name)
 	end)
 end
 
--- Scroll over the Look row: Auto, then each look, a step per notch.
-local cycle = { "auto" }
-for _, name in ipairs(shapes.order) do
-	table.insert(cycle, name)
-end
+-- Scroll over the Look row: a look per notch, in the page's order.
+local cycle = sorted_look_names
 look_row:subscribe("mouse.scrolled", function(env)
 	local delta = tonumber(env.SCROLL_DELTA) or 0
 	if delta == 0 then
 		return
 	end
-	local current = COLORS.look_pin or "auto"
+	local current = COLORS.look
 	local index = 1
 	for i, name in ipairs(cycle) do
 		if name == current then
@@ -215,7 +185,7 @@ look_row:subscribe("mouse.scrolled", function(env)
 end)
 
 -- Scriptable too: `sketchybar --trigger theme_set THEME=<name>`,
--- `sketchybar --trigger look_set LOOK=<name|auto>`.
+-- `sketchybar --trigger look_set LOOK=<name>`.
 SBAR.add("event", "theme_set")
 SBAR.add("event", "look_set")
 picker_trigger:subscribe("theme_set", function(env)

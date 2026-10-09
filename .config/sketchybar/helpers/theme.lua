@@ -72,7 +72,7 @@ local function render(name, push_look)
 		return
 	end
 	write(COLORS.theme_file, name)
-	write(COLORS.look_file, COLORS.look_pin or "auto")
+	write(COLORS.look_file, COLORS.look_pin)
 	-- Modules read their defaults from DEFAULT_ITEM: keep it current.
 	DEFAULT_ITEM.icon.color = COLORS.text_color
 	DEFAULT_ITEM.label.color = COLORS.text_color
@@ -110,25 +110,22 @@ local function render(name, push_look)
 	SBAR.exec(command)
 end
 
--- Picks a colour scheme; its default look follows unless one is pinned.
+-- Picks a colour scheme; the look stays.
 function M.apply(name)
 	render(name, false)
 end
 
--- Picks a look by name (pinned) with its own palette, or "auto" for
--- the current scheme's default look.
+-- Picks a look with its own palette; a colour picked afterwards
+-- changes the colours only.
 function M.apply_look(look)
-	local scheme = COLORS.active_scheme_name
-	if look == "auto" then
-		COLORS.look_pin = nil
-	elseif COLORS.shapes.presets[look] then
-		COLORS.look_pin = look
-		local palette = COLORS.shapes.palettes[look]
-		if palette and COLORS.all_schemes[palette] then
-			scheme = palette
-		end
-	else
+	if not COLORS.shapes.presets[look] then
 		return
+	end
+	COLORS.look_pin = look
+	local scheme = COLORS.active_scheme_name
+	local palette = COLORS.shapes.palettes[look]
+	if palette and COLORS.all_schemes[palette] then
+		scheme = palette
 	end
 	render(scheme, true)
 end
