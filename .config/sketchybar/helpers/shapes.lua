@@ -3,10 +3,11 @@
 -- the theme picker pins over it. A look writes EVERY key below, so
 -- nothing of the previous one lingers (a colour-only palette that
 -- bundled a glow could never switch it off again: KiwiDesk #578).
--- Never written: edges, gaps, thickness — they move windows. The
--- shelf's outer margin only for Strip (0: flush, fused with the
--- screen edge and sketchybar's strip); every other look gives the
--- profile's own margin back.
+-- Never written: edges and thickness. Two keys move windows and are
+-- set only by the look that wants them, every other look giving the
+-- profile's own value back: the shelf's outer margin (Strip: 0,
+-- flush with the screen edge and sketchybar's strip) and the layout
+-- gaps (Tiler: just clear of the ring, as a classic tiler).
 local M = {}
 
 M.order = { "glass", "strip", "tiler", "neon", "retro", "own" }
@@ -86,6 +87,7 @@ M.presets = {
 			glass = false,
 			ring = 2,
 			corners = "square",
+			fit_gaps = true, -- gaps = the ring's width, no whitespace
 			glow = false,
 			glow_size = 0,
 			sheen = 0,
@@ -134,6 +136,28 @@ M.presets = {
 	},
 }
 
+-- The profile's global gap when one number says it (the CLI's
+-- set_gap_global takes a number); nil leaves gaps alone.
+local gap_paths = {
+	"gap.global.inner.horizontal",
+	"gap.global.inner.vertical",
+	"gap.global.outer.top",
+	"gap.global.outer.bottom",
+	"gap.global.outer.left",
+	"gap.global.outer.right",
+}
+local function uniform_gap(style)
+	local value = nil
+	for _, path in ipairs(gap_paths) do
+		local v = style[path]
+		if type(v) ~= "number" or (value and v ~= value) then
+			return nil
+		end
+		value = v
+	end
+	return value
+end
+
 -- "Own": the KiwiDesk profile's own shape (set by looks.lua from the
 -- profile file; live CLI writes do not save into it) with the
 -- sketchybar pills of Glass.
@@ -155,6 +179,7 @@ function M.set_own(style)
 			shelf_border_width = pick("kiwishelf.border_width", glass.shelf_border_width),
 			highlight = pick("kiwishelf.highlight_width", glass.highlight),
 			outer_margin = pick("kiwishelf.outer_margin", 10),
+			gap = uniform_gap(s),
 			glass = pick("kiwishelf.liquid_glass", glass.glass),
 			drag_glass = s["drag.liquid_glass"],
 			sticky_glass = s["sticky.liquid_glass"],
@@ -211,6 +236,12 @@ function M.kiwidesk_command(name)
 		{ "monocle.set_app_bar_active_indicator", either(k.monocle_indicator, k.app_indicator) },
 		{ "scroll.set_app_bar_active_indicator", either(k.scroll_indicator, k.app_indicator) },
 	}
+	-- After the ring's verbs: fit_gaps measures the ring as now set.
+	if k.fit_gaps then
+		table.insert(verbs, { "border.fit_gaps", 0 })
+	elseif M.presets.own.kiwi.gap then
+		table.insert(verbs, { "set_gap_global", M.presets.own.kiwi.gap })
+	end
 	local parts = {}
 	for _, verb in ipairs(verbs) do
 		table.insert(parts, "kiwidesk " .. verb[1] .. " " .. tostring(verb[2]))
