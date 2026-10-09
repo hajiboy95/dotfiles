@@ -85,7 +85,7 @@ M.presets = {
 			shelf_border_width = 1,
 			highlight = 2,
 			glass = false,
-			ring = 2,
+			ring = 4,
 			corners = "square",
 			fit_gaps = true, -- gaps = the ring's width, no whitespace
 			glow = false,
