@@ -39,7 +39,6 @@ end
 function M.apply_shape()
 	local shape = COLORS.shape
 	local pill = {
-		drawing = not shape.strip,
 		color = COLORS.background,
 		border_color = shape.accent_border and COLORS.accent_color or COLORS.background_border,
 		border_width = shape.border,
@@ -53,6 +52,8 @@ function M.apply_shape()
 	DEFAULT_ITEM.popup.background.corner_radius = shape.radius
 	for _, name in ipairs(M.pills) do
 		SBAR.set(name, { background = pill })
+		-- Separately, after: setting a colour turns a background on.
+		SBAR.set(name, { background = { drawing = not shape.strip } })
 	end
 	SBAR.bar({
 		color = shape.strip and COLORS.background or 0x00000000,
@@ -91,13 +92,14 @@ local function render(name, push_look)
 			},
 		},
 	})
-	M.apply_shape()
 	for _, w in ipairs(M.words) do
 		w.item:set({ label = { font = LOOK.word_font(w.scale) } })
 	end
 	for _, fn in ipairs(M.hooks) do
 		fn()
 	end
+	-- After the hooks: one recolouring a pill would turn it back on.
+	M.apply_shape()
 	-- KiwiDesk follows in the background: the shape first, then the
 	-- colours (the glass tint depends on the look).
 	local command = COLORS.kiwidesk_command(COLORS)

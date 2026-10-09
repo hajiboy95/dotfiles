@@ -364,6 +364,14 @@ function colors.effective_look(name)
 	return colors.look_pin or (scheme and scheme.look) or "glass"
 end
 
+-- Relative brightness of 0xAARRGGBB, alpha ignored (Rec. 709 weights).
+local function luminance(c)
+	local r = math.floor(c / 0x10000) % 0x100
+	local g = math.floor(c / 0x100) % 0x100
+	local b = c % 0x100
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b
+end
+
 -- A scheme as worn under a look. Under Liquid Glass the pills turn
 -- glass-like: the hue at most 25% and a light rim. KiwiDesk's real
 -- glass keeps the theme's own tint (glass_tint; the owner prefers it
@@ -392,6 +400,18 @@ function colors.resolve(name, look)
 		data.background_border = 0x40ffffff
 		for key, value in pairs(scheme.glass or {}) do
 			data[key] = value
+		end
+		-- A flat tint (Strip) at KiwiDesk's own bar alpha (#755: one
+		-- alpha for every palette), from the darker of the pill and the
+		-- popup colour so light text reads even over a white wallpaper
+		-- (teal's cyan and liquid_glass's white cannot carry it).
+		if shape.sb.tint then
+			local src = scheme.background
+			if luminance(data.popup_background) < luminance(src) then
+				src = data.popup_background
+			end
+			data.background = with_alpha(src, shape.sb.tint)
+			data.glass_tint = data.background
 		end
 	else
 		-- The KiwiDesk overrides answer the glass shelf (teal's navy
