@@ -3,7 +3,10 @@
 -- the theme picker pins over it. A look writes EVERY key below, so
 -- nothing of the previous one lingers (a colour-only palette that
 -- bundled a glow could never switch it off again: KiwiDesk #578).
--- Never written: edges, gaps, thickness, margins — they move windows.
+-- Never written: edges, gaps, thickness — they move windows. The
+-- shelf's outer margin only for Strip (0: flush, fused with the
+-- screen edge and sketchybar's strip); every other look gives the
+-- profile's own margin back.
 local M = {}
 
 M.order = { "glass", "strip", "tiler", "neon", "retro", "own" }
@@ -56,7 +59,8 @@ M.presets = {
 		kiwi = {
 			style = "plain",
 			fit = "full",
-			roundness = 30,
+			roundness = 0, -- flush on the edge: no corners to round
+			outer_margin = 0,
 			shelf_border = false,
 			shelf_border_width = 1,
 			highlight = 2,
@@ -69,7 +73,7 @@ M.presets = {
 			app_indicator = "edge_mark",
 			space_indicator = "edge_mark",
 		},
-		sb = { radius = 5, border = 0, blur = 30, height = 30, popup_alpha = 0x99, strip = true },
+		sb = { radius = 0, border = 0, blur = 30, height = 30, popup_alpha = 0x99, strip = true },
 	},
 	tiler = {
 		kiwi = {
@@ -150,6 +154,7 @@ function M.set_own(style)
 			shelf_border = pick("kiwishelf.border", glass.shelf_border),
 			shelf_border_width = pick("kiwishelf.border_width", glass.shelf_border_width),
 			highlight = pick("kiwishelf.highlight_width", glass.highlight),
+			outer_margin = pick("kiwishelf.outer_margin", 10),
 			glass = pick("kiwishelf.liquid_glass", glass.glass),
 			drag_glass = s["drag.liquid_glass"],
 			sticky_glass = s["sticky.liquid_glass"],
@@ -190,6 +195,7 @@ function M.kiwidesk_command(name)
 		{ "kiwishelf.set_border", k.shelf_border },
 		{ "kiwishelf.set_border_width", k.shelf_border_width },
 		{ "kiwishelf.set_highlight_width", k.highlight },
+		{ "kiwishelf.set_outer_margin", either(k.outer_margin, M.presets.own.kiwi.outer_margin) },
 		-- Liquid Glass is one switch: every surface follows the shelf.
 		{ "kiwishelf.set_liquid_glass", k.glass },
 		{ "drag.set_liquid_glass", either(k.drag_glass, k.glass) },

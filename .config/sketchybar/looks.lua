@@ -202,6 +202,7 @@ local style_paths = {
 	"kiwishelf.border",
 	"kiwishelf.border_width",
 	"kiwishelf.highlight_width",
+	"kiwishelf.outer_margin",
 	"kiwishelf.liquid_glass",
 	"drag.liquid_glass",
 	"sticky.liquid_glass",
