@@ -10,7 +10,7 @@
 -- gaps (Tiler: just clear of the ring, as a classic tiler).
 local M = {}
 
-M.order = { "glass", "strip", "tiler", "neon", "retro", "own" }
+M.order = { "glass", "strip", "tiler", "neon", "retro", "kiwidesk" }
 
 -- Hack Nerd Font (Material Design) glyphs for the picker.
 M.glyphs = {
@@ -20,7 +20,7 @@ M.glyphs = {
 	tiler = "󰋁",
 	neon = "󰉁",
 	retro = "󰄱",
-	own = "󰋜",
+	kiwidesk = "󰋜",
 }
 
 -- Each look's own palette (looks.lua scheme), worn when the look is
@@ -32,7 +32,7 @@ M.palettes = {
 	tiler = "blacknwhite",
 	neon = "purple",
 	retro = "gruvbox",
-	own = "kiwidesk",
+	kiwidesk = "kiwidesk",
 }
 
 M.labels = {
@@ -41,7 +41,7 @@ M.labels = {
 	tiler = "Tiler",
 	neon = "Neon",
 	retro = "Retro",
-	own = "Own",
+	kiwidesk = "KiwiDesk",
 }
 
 -- kiwi: KiwiDesk's look. sb: sketchybar's pills (radius = roundness% x
@@ -170,7 +170,7 @@ local function uniform_gap(style)
 	return value
 end
 
--- "Own": the KiwiDesk profile's own shape (set by looks.lua from the
+-- "KiwiDesk": the KiwiDesk profile's own shape (set by looks.lua from the
 -- profile file; live CLI writes do not save into it) with the
 -- sketchybar pills of Glass.
 function M.set_own(style)
@@ -182,7 +182,7 @@ function M.set_own(style)
 		return s[key]
 	end
 	local glass = M.presets.glass.kiwi
-	M.presets.own = {
+	M.presets.kiwidesk = {
 		kiwi = {
 			style = pick("kiwishelf.background_style", glass.style),
 			fit = pick("kiwishelf.background_fit", glass.fit),
@@ -232,7 +232,7 @@ function M.kiwidesk_command(name)
 		{ "kiwishelf.set_border", k.shelf_border },
 		{ "kiwishelf.set_border_width", k.shelf_border_width },
 		{ "kiwishelf.set_highlight_width", k.highlight },
-		{ "kiwishelf.set_outer_margin", either(k.outer_margin, M.presets.own.kiwi.outer_margin) },
+		{ "kiwishelf.set_outer_margin", either(k.outer_margin, M.presets.kiwidesk.kiwi.outer_margin) },
 		-- Liquid Glass is one switch: every surface follows the shelf.
 		{ "kiwishelf.set_liquid_glass", k.glass },
 		{ "drag.set_liquid_glass", either(k.drag_glass, k.glass) },
@@ -251,8 +251,8 @@ function M.kiwidesk_command(name)
 	-- After the ring's verbs: fit_gaps measures the ring as now set.
 	if k.fit_gaps then
 		table.insert(verbs, { "border.fit_gaps", 0 })
-	elseif M.presets.own.kiwi.gap then
-		table.insert(verbs, { "set_gap_global", M.presets.own.kiwi.gap })
+	elseif M.presets.kiwidesk.kiwi.gap then
+		table.insert(verbs, { "set_gap_global", M.presets.kiwidesk.kiwi.gap })
 	end
 	local parts = {}
 	for _, verb in ipairs(verbs) do

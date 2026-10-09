@@ -194,7 +194,7 @@ local kiwi_paths = {
 	{ "drag.set_drop_zone_fill_color", "drag.drop_zone.fill_color" },
 }
 
--- Shape keys the "Own" look restores (helpers/shapes.lua).
+-- Shape keys the "KiwiDesk" look restores (helpers/shapes.lua).
 local style_paths = {
 	"kiwishelf.background_style",
 	"kiwishelf.background_fit",
@@ -262,7 +262,7 @@ for src in sources:
         glass = value
         break
 print("liquid_glass=" + ("on" if glass else "off"))
-# The profile's own shape, for the "Own" look.
+# The profile's own shape, for the "KiwiDesk" look.
 for path in sys.argv[2].split():
     for src in sources:
         node = src
@@ -322,7 +322,7 @@ if kiwi_profile_values then
 	local fill = v("kiwishelf.fill_color", 0xb31a1a2e)
 	schemes.kiwidesk = {
 		label = "KiwiDesk",
-		look = "own", -- the profile's own shape too
+		look = "kiwidesk", -- the profile's own shape too
 		is_kiwidesk_profile = true,
 		font = kiwi_profile_values.font_family,
 		bar_color = fill,
