@@ -18,11 +18,21 @@ local picker_trigger = SBAR.add("item", "theme_picker", {
 	popup = { align = "right", height = 24 },
 })
 
+-- A-Z, but KiwiDesk first: the one that is not ours (the profile's
+-- own colours, the profile's own look).
+local function kiwidesk_first(label_of)
+	return function(a, b)
+		if (a == "kiwidesk") ~= (b == "kiwidesk") then
+			return a == "kiwidesk"
+		end
+		return label_of(a) < label_of(b)
+	end
+end
+
 local sorted_scheme_names = {}
 for name, _ in pairs(COLORS.all_schemes) do
 	table.insert(sorted_scheme_names, name)
 end
-table.sort(sorted_scheme_names)
 
 local function scheme_label(name)
 	local scheme = COLORS.all_schemes[name]
@@ -32,15 +42,28 @@ end
 local function look_label(name)
 	return shapes.labels[name] or name
 end
+table.sort(sorted_scheme_names, kiwidesk_first(scheme_label))
 
-local function hover_color()
-	return LOOK.with_alpha(COLORS.text_color, 0x22)
+-- The hover box sits inside the popup's rounded frame: inset 4 pt,
+-- a row's height less 2, corners concentric with the popup's, no
+-- border (the default pill's border drew past the frame).
+local row_inset = 4
+local function hover()
+	return {
+		drawing = true,
+		color = LOOK.with_alpha(COLORS.text_color, 0x22),
+		height = 22,
+		corner_radius = math.max(COLORS.shape.radius - row_inset, 0),
+		border_width = 0,
+	}
 end
 
 -- A clickable row: glyph slot plus a fixed-width label.
 local function row(name, page_items)
 	local item = SBAR.add("item", "theme." .. name, {
 		position = "popup." .. picker_trigger.name,
+		padding_left = row_inset,
+		padding_right = row_inset,
 		icon = { width = 22, padding_left = DEFAULT_ITEM.icon.padding_left, padding_right = 0 },
 		label = {
 			font = LOOK.word_font(),
@@ -51,7 +74,7 @@ local function row(name, page_items)
 	})
 	THEME.track_word(item)
 	item:subscribe("mouse.entered", function()
-		item:set({ background = { drawing = true, color = hover_color() } })
+		item:set({ background = hover() })
 	end)
 	item:subscribe("mouse.exited", function()
 		item:set({ background = { drawing = false } })
@@ -73,14 +96,12 @@ for _, scheme_name in ipairs(sorted_scheme_names) do
 	dots[scheme_name] = row("dot." .. scheme_name, colour_page)
 end
 
--- Look page, A-Z like the colours.
+-- Look page, ordered like the colours.
 local sorted_look_names = {}
 for _, name in ipairs(shapes.order) do
 	table.insert(sorted_look_names, name)
 end
-table.sort(sorted_look_names, function(a, b)
-	return look_label(a) < look_label(b)
-end)
+table.sort(sorted_look_names, kiwidesk_first(look_label))
 local look_rows = {}
 for _, name in ipairs(sorted_look_names) do
 	look_rows[name] = row("look." .. name, look_page)
@@ -154,11 +175,15 @@ for name, dot in pairs(dots) do
 		THEME.apply(name)
 	end)
 end
+-- The switch row of the new page lands under the cursor, which never
+-- "entered" it: light it as hovered.
 look_row:subscribe("mouse.clicked", function()
 	set_page("look")
+	back_row:set({ background = hover() })
 end)
 back_row:subscribe("mouse.clicked", function()
 	set_page("colour")
+	look_row:set({ background = hover() })
 end)
 for name, item in pairs(look_rows) do
 	item:subscribe("mouse.clicked", function()
