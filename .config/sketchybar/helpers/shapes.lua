@@ -25,7 +25,7 @@ M.glyphs = {
 -- afterwards changes the colours only.
 M.palettes = {
 	glass = "liquid_glass",
-	strip = "green",
+	strip = "teal", -- the one bright hue: reads as colour at 25%
 	tiler = "blacknwhite",
 	neon = "purple",
 	retro = "gruvbox",
@@ -45,8 +45,9 @@ M.labels = {
 -- 15, the pill being 30 pt tall), popup alpha (a non-glass popup needs
 -- more cover: no blur hides a busy window behind it). strip: one bar
 -- instead of pills. accent_border: pills outlined in the accent.
--- tint: without glass, the scheme's hue at this alpha, flat on both
--- bars (KiwiDesk's fill takes the same see-through colour, no blur).
+-- tint: without glass, the scheme's hue at 25% all the same, flat on
+-- both bars (KiwiDesk's fill takes the same see-through colour, no
+-- blur). A look never alters a palette's character.
 M.presets = {
 	glass = {
 		kiwi = {
@@ -96,7 +97,7 @@ M.presets = {
 			app_indicator = "edge_mark",
 			space_indicator = "edge_mark",
 		},
-		sb = { radius = 0, border = 0, blur = 30, height = 30, popup_alpha = 0x99, strip = true, tint = 0xa5 },
+		sb = { radius = 0, border = 0, blur = 30, height = 30, popup_alpha = 0x99, strip = true, tint = true },
 	},
 	tiler = {
 		kiwi = {
