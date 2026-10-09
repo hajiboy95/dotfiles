@@ -41,3 +41,8 @@ Brewfile$
 ^/LICENSE$
 ^\.pre-commit-config\.yaml$
 ^\.luacheckrc$
+
+# Agent guidance: repo-only (.claude would merge into the global ~/.claude)
+^/AGENTS\.md$
+^/CLAUDE\.md$
+^/\.claude$
