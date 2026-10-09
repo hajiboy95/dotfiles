@@ -16,6 +16,7 @@ colors.charging = 0xffffd700
 -- 2. Define Your Schemes
 local schemes = {
 	gruvbox = {
+		look = "retro", -- default look (helpers/shapes.lua): warm, print-era palette
 		font = "Charter", -- words (numbers and icons stay Hack)
 		bar_color = 0x70282828,
 		accent_color = 0xffd79921,
@@ -28,9 +29,10 @@ local schemes = {
 		popup_border = 0xffd79921,
 	},
 	teal = {
+		look = "glass", -- default look (helpers/shapes.lua): a cool hue that reads well under glass
 		font = "PT Sans", -- words (numbers and icons stay Hack)
-		-- Its accent (#001F30) vanishes on KiwiDesk's shelf: KiwiDesk
-		-- gets these instead.
+		-- Its accent (#001F30) vanishes on KiwiDesk's glass shelf:
+		-- KiwiDesk gets these instead there.
 		kiwi = {
 			accent_color = 0xff2cf9ed,
 			disabled_color = 0xff7fc4cc,
@@ -59,6 +61,7 @@ local schemes = {
 		},
 	},
 	blacknwhite = {
+		look = "tiler", -- default look (helpers/shapes.lua): monochrome wants hard edges
 		font = "Helvetica Neue", -- words (numbers and icons stay Hack)
 		bar_color = 0x40000000,
 		accent_color = 0xffffffff,
@@ -71,6 +74,7 @@ local schemes = {
 		popup_border = 0xffffffff,
 	},
 	purple = {
+		look = "neon", -- default look (helpers/shapes.lua): a saturated violet carries a bloom
 		font = "SF Pro Rounded", -- words (numbers and icons stay Hack)
 		bar_color = 0x70140c42,
 		accent_color = 0xffeb46f9,
@@ -83,6 +87,7 @@ local schemes = {
 		popup_border = 0xffeb46f9,
 	},
 	red = {
+		look = "tiler", -- default look (helpers/shapes.lua): a glowing red ring reads as an error
 		font = "Trebuchet MS", -- words (numbers and icons stay Hack)
 		bar_color = 0x7023090e,
 		accent_color = 0xffff2453,
@@ -95,6 +100,7 @@ local schemes = {
 		popup_border = 0xffff2453,
 	},
 	blue = {
+		look = "glass", -- default look (helpers/shapes.lua): closest to native macOS
 		font = "Avenir Next", -- words (numbers and icons stay Hack)
 		bar_color = 0x70021254,
 		accent_color = 0xff15bdf9,
@@ -107,6 +113,7 @@ local schemes = {
 		popup_border = 0xff15bdf9,
 	},
 	green = {
+		look = "strip", -- default look (helpers/shapes.lua): calm, native
 		font = "Gill Sans", -- words (numbers and icons stay Hack)
 		bar_color = 0x70003315,
 		accent_color = 0xff1dfca1,
@@ -119,6 +126,7 @@ local schemes = {
 		popup_border = 0xff1dfca1,
 	},
 	orange = {
+		look = "retro", -- default look (helpers/shapes.lua): warm, like gruvbox
 		font = "Proxima Nova", -- words (numbers and icons stay Hack)
 		bar_color = 0x70381c02,
 		accent_color = 0xfff97716,
@@ -131,6 +139,7 @@ local schemes = {
 		popup_border = 0xfff97716,
 	},
 	yellow = {
+		look = "strip", -- default look (helpers/shapes.lua): a yellow glow smears on light wallpapers
 		font = "SF Compact Text", -- words (numbers and icons stay Hack)
 		bar_color = 0x702d2b02,
 		accent_color = 0xfff7fc17,
@@ -143,6 +152,7 @@ local schemes = {
 		popup_border = 0xfff7fc17,
 	},
 	liquid_glass = {
+		look = "glass", -- default look (helpers/shapes.lua): it is the glass colour
 		font = "SF Pro", -- words (numbers and icons stay Hack)
 		bar_color = 0x00000000,
 		-- Plain text white; "on" in True Dark's cyan, which reads on the
@@ -184,13 +194,36 @@ local kiwi_paths = {
 	{ "drag.set_drop_zone_fill_color", "drag.drop_zone.fill_color" },
 }
 
+-- Shape keys the "Own" look restores (helpers/shapes.lua).
+local style_paths = {
+	"kiwishelf.background_style",
+	"kiwishelf.background_fit",
+	"kiwishelf.corner_roundness",
+	"kiwishelf.border",
+	"kiwishelf.border_width",
+	"kiwishelf.highlight_width",
+	"kiwishelf.liquid_glass",
+	"drag.liquid_glass",
+	"sticky.liquid_glass",
+	"shortcut_panel.liquid_glass",
+	"border.width",
+	"border.corner_style",
+	"border.glow",
+	"border.glow_size",
+	"border.sheen",
+	"app_bar.active_indicator",
+	"space_bar.active_indicator",
+	"monocle.app_bar_active_indicator",
+	"scroll.app_bar_active_indicator",
+}
+
 -- Reads every path above; returns { [path] = "#hex" } or nil.
 local function read_kiwidesk_profile()
 	local wanted = {}
 	for _, entry in ipairs(kiwi_paths) do
 		table.insert(wanted, entry[2])
 	end
-	local handle = io.popen([[python3 - ']] .. table.concat(wanted, " ") .. [[' 2>/dev/null <<'PY'
+	local handle = io.popen([[python3 - ']] .. table.concat(wanted, " ") .. [[' ']] .. table.concat(style_paths, " ") .. [[' 2>/dev/null <<'PY'
 import json, os, subprocess, sys
 base = os.path.expanduser("~/.config/KiwiDesk")
 try:
@@ -222,6 +255,15 @@ for src in sources:
         glass = value
         break
 print("liquid_glass=" + ("on" if glass else "off"))
+# The profile's own shape, for the "Own" look.
+for path in sys.argv[2].split():
+    for src in sources:
+        node = src
+        for key in path.split("."):
+            node = node.get(key) if isinstance(node, dict) else None
+        if isinstance(node, (bool, int, float, str)):
+            print("style:" + path + "=" + json.dumps(node))
+            break
 for src in sources:
     family = (src.get("kiwishelf") or {}).get("font_family")
     if isinstance(family, str) and family:
@@ -239,6 +281,14 @@ PY]])
 	end
 	values.liquid_glass = out:match("liquid_glass=on") ~= nil
 	values.font_family = out:match("font_family=([^\n]+)")
+	values.style = {}
+	for path, raw in out:gmatch("style:([%w%._]+)=([^\n]+)") do
+		if raw == "true" or raw == "false" then
+			values.style[path] = raw == "true"
+		else
+			values.style[path] = tonumber(raw) or raw:match('^"(.*)"$') or raw
+		end
+	end
 	return next(values) and values or nil
 end
 
@@ -263,14 +313,9 @@ if kiwi_profile_values then
 		return hex and argb(hex) or fallback
 	end
 	local fill = v("kiwishelf.fill_color", 0xb31a1a2e)
-	-- KiwiDesk's real Liquid Glass only TINTS with the fill, so it reads
-	-- light and see-through; sketchybar paints it flat. With glass on,
-	-- imitate it: the tint at 25% and a light glass rim.
-	local glass = kiwi_profile_values.liquid_glass
-	local pill = glass and with_alpha(fill, 0x40) or fill
-	local rim = glass and 0x40ffffff or v("kiwishelf.border_color", 0x59e8eaf6)
 	schemes.kiwidesk = {
 		label = "KiwiDesk",
+		look = "own", -- the profile's own shape too
 		is_kiwidesk_profile = true,
 		font = kiwi_profile_values.font_family,
 		bar_color = fill,
@@ -283,36 +328,70 @@ if kiwi_profile_values then
 		-- Dim = the text colour at 50%: text_color is item_color too, so
 		-- the bare value would make "off" look the same as "on".
 		disabled_color = with_alpha(v("kiwishelf.item_color", 0xffe8eaf6), 0x80),
-		background = pill,
-		background_border = rim,
+		background = fill,
+		background_border = v("kiwishelf.border_color", 0x59e8eaf6),
 		popup_background = with_alpha(fill, 0xee),
 		popup_border = v("kiwishelf.highlight_color", 0xff564ab6),
 	}
 end
 
--- 2c. While the KiwiDesk profile wears Liquid Glass, every scheme's
--- pills turn glass-like too: the theme's hue at most 25%, a light
--- rim. That pill colour is also what tints KiwiDesk's glass (kiwi_map),
--- and a near-opaque tint (Blue's 0xfa) would hide the glass entirely.
-if kiwi_profile_values and kiwi_profile_values.liquid_glass then
-	for name, scheme in pairs(schemes) do
-		if name ~= "kiwidesk" and scheme.background then
-			local alpha = math.floor(scheme.background / 0x1000000) % 0x100
-			-- KiwiDesk's real glass keeps the theme's own tint (the owner
-			-- prefers it as is); only sketchybar's painted pills drop to
-			-- 25% to read as glass.
-			scheme.glass_tint = scheme.background
-			-- The glass draws its own light edge; an opaque theme border
-			-- inside it reads as a second line, so the border is the
-			-- same translucent rim the pills get.
-			scheme.glass_border = 0x40ffffff
-			scheme.background = with_alpha(scheme.background, math.min(alpha, 0x40))
-			scheme.background_border = 0x40ffffff
-			for key, value in pairs(scheme.glass or {}) do
-				scheme[key] = value
-			end
-		end
+-- 2c. Looks (helpers/shapes.lua) own the shape, Liquid Glass
+-- included; each scheme names its default look, a picked look pins
+-- over it (helpers/active_look.txt: a look name, or "auto").
+local shapes = require("helpers.shapes")
+shapes.set_own(kiwi_profile_values and kiwi_profile_values.style)
+colors.shapes = shapes
+colors.look_file = config_dir .. "/helpers/active_look.txt"
+colors.look_pin = nil
+local lf = io.open(colors.look_file, "r")
+if lf then
+	local content = lf:read("*all"):gsub("%s+", "")
+	if shapes.presets[content] then
+		colors.look_pin = content
 	end
+	lf:close()
+end
+
+function colors.effective_look(name)
+	local scheme = schemes[name]
+	return colors.look_pin or (scheme and scheme.look) or "glass"
+end
+
+-- A scheme as worn under a look. Under Liquid Glass the pills turn
+-- glass-like: the hue at most 25% and a light rim. KiwiDesk's real
+-- glass keeps the theme's own tint (glass_tint; the owner prefers it
+-- as is), and the scheme's `glass` table fixes colours that only work
+-- on its opaque pill (teal's navy text). A copy: the scheme stays
+-- as written, so a later non-glass look gets it back whole.
+function colors.resolve(name, look)
+	local scheme = schemes[name]
+	if not scheme then
+		return nil
+	end
+	local shape = shapes.get(look or colors.effective_look(name))
+	local data = {}
+	for k, v in pairs(scheme) do
+		data[k] = v
+	end
+	if shape.kiwi.glass and data.background then
+		local alpha = math.floor(data.background / 0x1000000) % 0x100
+		data.glass_tint = data.background
+		-- The glass draws its own light edge; an opaque theme border
+		-- inside it reads as a second line.
+		data.glass_border = 0x40ffffff
+		data.background = with_alpha(data.background, math.min(alpha, 0x40))
+		data.background_border = 0x40ffffff
+		for key, value in pairs(scheme.glass or {}) do
+			data[key] = value
+		end
+	else
+		-- The KiwiDesk overrides answer the glass shelf (teal's navy
+		-- vanishes there); on an opaque shelf the scheme reads as is.
+		data.kiwi = nil
+	end
+	data.shape = shape.sb
+	data.look = look or colors.effective_look(name)
+	return data
 end
 
 -- 3. Select Active Scheme
@@ -334,7 +413,7 @@ active_name = active_name or (schemes.kiwidesk and "kiwidesk") or first_availabl
 -- no reload: helpers/theme.lua re-applies the colours afterwards.
 local scheme_keys = {}
 function colors.use(name)
-	local data = schemes[name]
+	local data = colors.resolve(name)
 	if not data then
 		return false
 	end

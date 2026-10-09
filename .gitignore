@@ -20,3 +20,7 @@
 # Only the event hooks are tracked. gui.json and profiles/ are GUI-managed and
 # still in flux, so they stay local.
 !.config/KiwiDesk/init.lua
+
+# Picked theme state (sketchybar theme picker): per machine
+.config/sketchybar/helpers/active_theme.txt
+.config/sketchybar/helpers/active_look.txt

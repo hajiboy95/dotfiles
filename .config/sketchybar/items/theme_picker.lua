@@ -1,4 +1,13 @@
--- 1. The Trigger Item (The anchor for the popup)
+-- THEME PICKER: one popup, two pages (a native submenu).
+--   Colour page: every colour scheme, then a "Look" row naming the
+--   look worn; scrolling over that row steps through the looks.
+--   Look page: back to Colour, Auto (the scheme's own look), the looks.
+-- A pick applies live (helpers/theme) and the popup stays open, so
+-- combinations can be tried. Active rows differ in shape, not only
+-- colour (􀃳 vs 􀀁, ✓), for red-green colour vision.
+local shapes = COLORS.shapes
+local row_label_width = 130 -- equal rows: the hover highlight spans the menu
+
 local picker_trigger = SBAR.add("item", "theme_picker", {
 	position = "right",
 	icon = {
@@ -6,85 +15,233 @@ local picker_trigger = SBAR.add("item", "theme_picker", {
 		font = { size = DEFAULT_ITEM.icon.font.size * 1.2 },
 	},
 	label = { drawing = false },
-	popup = { align = "right" },
+	popup = { align = "right", height = 24 },
 })
 
--- 2. Alphabetical Sorting Logic
 local sorted_scheme_names = {}
 for name, _ in pairs(COLORS.all_schemes) do
 	table.insert(sorted_scheme_names, name)
 end
-table.sort(sorted_scheme_names) -- Sorts the table A-Z
+table.sort(sorted_scheme_names)
 
--- 3. Create the Popup Content. A pick switches live (helpers/theme):
--- COLORS swap in place and every item recolours, no reload.
-local dots = {}
-
-local function is_active(name)
-	return COLORS.active_scheme_name == name
+local function scheme_label(name)
+	local scheme = COLORS.all_schemes[name]
+	return scheme.label or name:gsub("_", " "):gsub("^%l", string.upper)
 end
 
-local function paint_dot(name)
-	local active = is_active(name)
-	dots[name]:set({
-		icon = { string = active and "􀃳" or "􀀁", color = COLORS.all_schemes[name].accent_color },
-		-- The tick and the colour mark the active theme (a custom font
-		-- may have no bold).
-		label = { color = active and COLORS.accent_color or COLORS.disabled_color },
-	})
+local function look_label(name)
+	return shapes.labels[name] or name
 end
 
-for _, scheme_name in ipairs(sorted_scheme_names) do
-	local scheme = COLORS.all_schemes[scheme_name]
-	local dot = SBAR.add("item", "theme.dot." .. scheme_name, {
+local function hover_color()
+	return LOOK.with_alpha(COLORS.text_color, 0x22)
+end
+
+-- A clickable row: glyph slot plus a fixed-width label.
+local function row(name, page_items)
+	local item = SBAR.add("item", "theme." .. name, {
 		position = "popup." .. picker_trigger.name,
+		icon = { width = 22, padding_left = DEFAULT_ITEM.icon.padding_left, padding_right = 0 },
 		label = {
-			string = scheme.label or scheme_name:gsub("_", " "):gsub("^%l", string.upper),
 			font = LOOK.word_font(),
+			width = row_label_width,
+			padding_left = 4,
+			padding_right = DEFAULT_ITEM.icon.padding_right,
 		},
 	})
-	dots[scheme_name] = THEME.track_word(dot)
-	paint_dot(scheme_name)
+	THEME.track_word(item)
+	item:subscribe("mouse.entered", function()
+		item:set({ background = { drawing = true, color = hover_color() } })
+	end)
+	item:subscribe("mouse.exited", function()
+		item:set({ background = { drawing = false } })
+	end)
+	table.insert(page_items, item)
+	return item
+end
 
-	-- Picking the active theme re-sends it to KiwiDesk (e.g. after
-	-- KiwiDesk's own colours were changed).
-	dot:subscribe("mouse.clicked", function()
-		picker_trigger:set({ popup = { drawing = false } })
-		THEME.apply(scheme_name)
-	end)
-	dot:subscribe("mouse.entered", function()
-		dot:set({ label = { color = COLORS.accent_color }, background = { drawing = true } })
-	end)
-	dot:subscribe("mouse.exited", function()
+-- A divider: a 1 pt line across the row, no hover.
+local function divider(name, page_items)
+	local item = SBAR.add("item", "theme." .. name, {
+		position = "popup." .. picker_trigger.name,
+		width = 22 + row_label_width + DEFAULT_ITEM.icon.padding_left + 4 + DEFAULT_ITEM.icon.padding_right,
+		icon = { drawing = false },
+		label = { drawing = false },
+		background = { drawing = true, height = 1, corner_radius = 0, border_width = 0 },
+	})
+	table.insert(page_items, item)
+	return item
+end
+
+local colour_page, look_page = {}, {}
+local dividers = {}
+
+-- Colour page
+local dots = {}
+for _, scheme_name in ipairs(sorted_scheme_names) do
+	dots[scheme_name] = row("dot." .. scheme_name, colour_page)
+end
+table.insert(dividers, divider("sep", colour_page))
+local look_row = row("look_row", colour_page)
+
+-- Look page
+local back_row = row("back", look_page)
+table.insert(dividers, divider("sep2", look_page))
+local auto_row = row("look.auto", look_page)
+local look_rows = {}
+for _, name in ipairs(shapes.order) do
+	look_rows[name] = row("look." .. name, look_page)
+end
+
+local function paint()
+	local active_scheme = COLORS.active_scheme_name
+	for name, dot in pairs(dots) do
+		local active = name == active_scheme
+		-- The dot wears the scheme as it would look now (teal's glass
+		-- variant differs from its opaque one).
+		local resolved = LOOK.resolve(name)
 		dot:set({
-			label = { color = is_active(scheme_name) and COLORS.accent_color or COLORS.disabled_color },
-			background = { drawing = false },
+			icon = { string = active and "􀃳" or "􀀁", color = resolved.accent_color },
+			label = {
+				string = scheme_label(name),
+				color = active and COLORS.accent_color or COLORS.disabled_color,
+			},
 		})
+	end
+	for _, item in ipairs(dividers) do
+		item:set({ background = { color = LOOK.with_alpha(COLORS.disabled_color, 0x40) } })
+	end
+
+	local pinned = COLORS.look_pin
+	look_row:set({
+		icon = { string = shapes.glyphs[COLORS.look], color = COLORS.accent_color },
+		label = {
+			string = "Look  " .. look_label(COLORS.look) .. (pinned and "" or " · Auto") .. "  ›",
+			color = COLORS.text_color,
+		},
+	})
+	back_row:set({
+		icon = { string = "󰁍", color = COLORS.disabled_color },
+		label = { string = "Colour · " .. scheme_label(active_scheme), color = COLORS.text_color },
+	})
+	local default_look = COLORS.all_schemes[active_scheme].look or "glass"
+	auto_row:set({
+		icon = { string = shapes.glyphs.auto, color = pinned and COLORS.disabled_color or COLORS.accent_color },
+		label = {
+			string = "Auto · " .. look_label(default_look) .. (pinned and "" or "  ✓"),
+			color = pinned and COLORS.disabled_color or COLORS.accent_color,
+		},
+	})
+	for name, item in pairs(look_rows) do
+		local active = pinned == name
+		item:set({
+			icon = { string = shapes.glyphs[name], color = active and COLORS.accent_color or COLORS.disabled_color },
+			label = {
+				string = look_label(name) .. (active and "  ✓" or ""),
+				color = active and COLORS.accent_color or COLORS.disabled_color,
+			},
+		})
+	end
+end
+
+-- Page switch: rows vanish under the cursor, which can read as the
+-- mouse leaving; ignore exits briefly.
+local ignore_exit = false
+local function set_page(page)
+	ignore_exit = true
+	SBAR.delay(0.25, function()
+		ignore_exit = false
+	end)
+	for _, item in ipairs(colour_page) do
+		item:set({ drawing = page == "colour", background = { drawing = false } })
+	end
+	for _, item in ipairs(look_page) do
+		item:set({ drawing = page == "look", background = { drawing = false } })
+	end
+	-- Dividers keep their line.
+	for _, item in ipairs(dividers) do
+		item:set({ background = { drawing = true } })
+	end
+end
+set_page("colour")
+ignore_exit = false
+
+local function close()
+	picker_trigger:set({ popup = { drawing = false } })
+	set_page("colour")
+end
+
+-- Clicks. Picking the active entry re-sends it to KiwiDesk (e.g.
+-- after KiwiDesk's own colours were changed).
+for name, dot in pairs(dots) do
+	dot:subscribe("mouse.clicked", function()
+		THEME.apply(name)
+	end)
+end
+look_row:subscribe("mouse.clicked", function()
+	set_page("look")
+end)
+back_row:subscribe("mouse.clicked", function()
+	set_page("colour")
+end)
+auto_row:subscribe("mouse.clicked", function()
+	THEME.apply_look("auto")
+end)
+for name, item in pairs(look_rows) do
+	item:subscribe("mouse.clicked", function()
+		THEME.apply_look(name)
 	end)
 end
 
--- Scriptable too: `sketchybar --trigger theme_set THEME=<name>`.
+-- Scroll over the Look row: Auto, then each look, a step per notch.
+local cycle = { "auto" }
+for _, name in ipairs(shapes.order) do
+	table.insert(cycle, name)
+end
+look_row:subscribe("mouse.scrolled", function(env)
+	local delta = tonumber(env.SCROLL_DELTA) or 0
+	if delta == 0 then
+		return
+	end
+	local current = COLORS.look_pin or "auto"
+	local index = 1
+	for i, name in ipairs(cycle) do
+		if name == current then
+			index = i
+		end
+	end
+	index = (index - 1 + (delta > 0 and -1 or 1)) % #cycle + 1
+	THEME.apply_look(cycle[index])
+end)
+
+-- Scriptable too: `sketchybar --trigger theme_set THEME=<name>`,
+-- `sketchybar --trigger look_set LOOK=<name|auto>`.
 SBAR.add("event", "theme_set")
+SBAR.add("event", "look_set")
 picker_trigger:subscribe("theme_set", function(env)
 	if env.THEME and COLORS.all_schemes[env.THEME] then
 		THEME.apply(env.THEME)
 	end
 end)
-
-THEME.on_change(function()
-	for name in pairs(dots) do
-		paint_dot(name)
+picker_trigger:subscribe("look_set", function(env)
+	if env.LOOK then
+		THEME.apply_look(env.LOOK)
 	end
 end)
 
--- 3. Toggle Logic
--- Clicking the trigger shows/hides the popup
+THEME.on_change(paint)
+paint()
+
 picker_trigger:subscribe("mouse.clicked", function()
-	local current_state = picker_trigger:query().popup.drawing
-	picker_trigger:set({ popup = { drawing = (current_state == "off") } })
+	if picker_trigger:query().popup.drawing == "off" then
+		picker_trigger:set({ popup = { drawing = true } })
+	else
+		close()
+	end
 end)
 
--- Optional: Close popup if mouse leaves the area
 picker_trigger:subscribe("mouse.exited.global", function()
-	picker_trigger:set({ popup = { drawing = false } })
+	if not ignore_exit then
+		close()
+	end
 end)

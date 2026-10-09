@@ -1,11 +1,13 @@
-local border_width = 1
-local corner_raduis = 15
+-- Pill shape comes from the active look (helpers/shapes.lua).
+local shape = COLORS.shape
+local border_width = shape.border
+local corner_raduis = shape.radius
 local item_padding = 10
 -- The bar matches the menu bar under the notch (32 pt on this
 -- MacBook, NSScreen.safeAreaInsets.top) so it covers it fully; the
 -- pills take nearly all of it, so they end level with the notch.
 local bar_height = 32
-local height = bar_height - 2 -- item pill height
+local height = shape.height -- item pill height
 local size = 13.5
 -- Define default item properties
 local default_item = {
@@ -41,10 +43,10 @@ local default_item = {
 	-- dark base at 50%: the pill colour alone (0x20 white in Liquid
 	-- Glass) leaves white text unreadable over a white window.
 	popup = {
-		blur_radius = 60,
+		blur_radius = shape.blur,
 		background = {
 			corner_radius = corner_raduis,
-			color = LOOK.with_alpha(COLORS.popup_background, 0x80),
+			color = LOOK.with_alpha(COLORS.popup_background, shape.popup_alpha),
 			border_width = border_width,
 			border_color = COLORS.background_border,
 		},
@@ -62,5 +64,6 @@ SBAR.bar({
 	color = 0x00000000,
 	blur_radius = 0,
 })
+
 
 return default_item

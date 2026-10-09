@@ -48,6 +48,8 @@ separator_module.create("resources_separator")
 require("items.resources")
 
 -- 4. Finalize
+-- The active look's pill shape (or strip), now that the pills exist.
+THEME.apply_shape()
 SBAR.end_config()
 
 SBAR.event_loop() -- This keeps the lua process alive
