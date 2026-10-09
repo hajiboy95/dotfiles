@@ -60,33 +60,37 @@ local function row(name, page_items)
 	return item
 end
 
--- A divider: a 1 pt line across the row, no hover.
-local function divider(name, page_items)
+-- Section caption: no hover, no click. Every popup row is one
+-- height, so a 1 pt divider would still leave a blank row; a caption
+-- puts that row to use (as tailscale's EXIT NODE).
+local function caption(name, text, page_items)
 	local item = SBAR.add("item", "theme." .. name, {
 		position = "popup." .. picker_trigger.name,
-		width = 22 + row_label_width + DEFAULT_ITEM.icon.padding_left + 4 + DEFAULT_ITEM.icon.padding_right,
 		icon = { drawing = false },
-		label = { drawing = false },
-		background = { drawing = true, height = 1, corner_radius = 0, border_width = 0 },
+		label = {
+			string = text,
+			font = LOOK.word_font(0.75),
+			padding_left = DEFAULT_ITEM.icon.padding_left,
+		},
 	})
+	THEME.track_word(item, 0.75)
 	table.insert(page_items, item)
 	return item
 end
 
 local colour_page, look_page = {}, {}
-local dividers = {}
+local captions = {}
 
 -- Colour page
 local dots = {}
 for _, scheme_name in ipairs(sorted_scheme_names) do
 	dots[scheme_name] = row("dot." .. scheme_name, colour_page)
 end
-table.insert(dividers, divider("sep", colour_page))
+table.insert(captions, caption("look_caption", "LOOK", colour_page))
 local look_row = row("look_row", colour_page)
 
 -- Look page
 local back_row = row("back", look_page)
-table.insert(dividers, divider("sep2", look_page))
 local auto_row = row("look.auto", look_page)
 local look_rows = {}
 for _, name in ipairs(shapes.order) do
@@ -108,15 +112,15 @@ local function paint()
 			},
 		})
 	end
-	for _, item in ipairs(dividers) do
-		item:set({ background = { color = LOOK.with_alpha(COLORS.disabled_color, 0x40) } })
+	for _, item in ipairs(captions) do
+		item:set({ label = { color = COLORS.disabled_color } })
 	end
 
 	local pinned = COLORS.look_pin
 	look_row:set({
 		icon = { string = shapes.glyphs[COLORS.look], color = COLORS.accent_color },
 		label = {
-			string = "Look  " .. look_label(COLORS.look) .. (pinned and "" or " · Auto") .. "  ›",
+			string = look_label(COLORS.look) .. (pinned and "" or " · Auto") .. "  ›",
 			color = COLORS.text_color,
 		},
 	})
@@ -157,10 +161,6 @@ local function set_page(page)
 	end
 	for _, item in ipairs(look_page) do
 		item:set({ drawing = page == "look", background = { drawing = false } })
-	end
-	-- Dividers keep their line.
-	for _, item in ipairs(dividers) do
-		item:set({ background = { drawing = true } })
 	end
 end
 set_page("colour")
