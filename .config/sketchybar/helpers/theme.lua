@@ -59,7 +59,8 @@ function M.apply_shape()
 		border_color = COLORS.background_border,
 		border_width = 0,
 		corner_radius = shape.strip and shape.radius or 0,
-		blur_radius = shape.strip and shape.blur or 0,
+		-- No blur: KiwiDesk's flat fill has none, so the band matches.
+		blur_radius = 0,
 	})
 end
 

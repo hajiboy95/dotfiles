@@ -45,6 +45,8 @@ M.labels = {
 -- 15, the pill being 30 pt tall), popup alpha (a non-glass popup needs
 -- more cover: no blur hides a busy window behind it). strip: one bar
 -- instead of pills. accent_border: pills outlined in the accent.
+-- tint: without glass, the scheme's hue at 25% all the same, flat on
+-- both bars (KiwiDesk's fill takes the same see-through colour).
 M.presets = {
 	glass = {
 		kiwi = {
@@ -85,7 +87,7 @@ M.presets = {
 			shelf_border = false,
 			shelf_border_width = 1,
 			highlight = 2,
-			glass = false, -- one flat colour: sketchybar cannot draw real glass, so a glass band would not match
+			glass = false, -- sketchybar cannot draw real glass: both bars paint one flat tint instead
 			ring = 3,
 			corners = "rounded",
 			glow = false,
@@ -94,7 +96,7 @@ M.presets = {
 			app_indicator = "edge_mark",
 			space_indicator = "edge_mark",
 		},
-		sb = { radius = 0, border = 0, blur = 0, height = 30, popup_alpha = 0xe6, strip = true },
+		sb = { radius = 0, border = 0, blur = 30, height = 30, popup_alpha = 0x99, strip = true, tint = true },
 	},
 	tiler = {
 		kiwi = {

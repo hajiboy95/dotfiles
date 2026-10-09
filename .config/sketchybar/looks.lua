@@ -380,9 +380,11 @@ function colors.resolve(name, look)
 	for k, v in pairs(scheme) do
 		data[k] = v
 	end
-	if shape.kiwi.glass and data.background then
+	if (shape.kiwi.glass or shape.sb.tint) and data.background then
 		local alpha = math.floor(data.background / 0x1000000) % 0x100
-		data.glass_tint = data.background
+		-- Real glass tints with the full colour; a flat tint is painted
+		-- as is, so KiwiDesk gets the same see-through colour.
+		data.glass_tint = shape.kiwi.glass and data.background or with_alpha(data.background, math.min(alpha, 0x40))
 		-- The glass draws its own light edge; an opaque theme border
 		-- inside it reads as a second line.
 		data.glass_border = 0x40ffffff
