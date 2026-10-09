@@ -2,7 +2,7 @@
 -- pill and popup, then runs each module's hook so items with colour
 -- logic of their own (state colours, graphs, the picker's ticks)
 -- re-render. No `sketchybar --reload`, so no flash.
-local M = { hooks = {}, pills = { "right.bracket", "resources.bracket", "spotify.bracket" } }
+local M = { hooks = {}, pills = { "menus.bracket", "right.bracket", "resources.bracket", "spotify.bracket" } }
 
 -- Items whose label is a WORD register here; a theme switch re-sets
 -- their font (numbers and icons keep Hack and are not listed).

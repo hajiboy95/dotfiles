@@ -45,7 +45,7 @@ end
 
 -- 3. Create the Bracket
 -- This wraps the Apple Logo + All Menu Items
-SBAR.add("bracket", menu_items_list, {
+SBAR.add("bracket", "menus.bracket", menu_items_list, {
 	background = {
 		drawing = true,
 	},

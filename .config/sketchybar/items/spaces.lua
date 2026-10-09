@@ -185,9 +185,21 @@ table.insert(space_item_list, front_app.name)
 -- ==========================================================
 -- BRACKET CREATION
 -- ==========================================================
-local spaces_bracket = SBAR.add("bracket", space_item_list, {
+local spaces_bracket = SBAR.add("bracket", "spaces.bracket", space_item_list, {
 	background = { drawing = true },
 })
+
+-- Not in THEME.pills: its pill hides while the app menu is open, and
+-- setting a colour would turn it back on.
+THEME.on_change(function()
+	spaces_bracket:set({
+		background = {
+			drawing = APPLICATION_MENU_COLLAPSED,
+			color = COLORS.background,
+			border_color = COLORS.background_border,
+		},
+	})
+end)
 
 -- ==========================================================
 -- CONNECTION & UPDATE MANAGEMENT

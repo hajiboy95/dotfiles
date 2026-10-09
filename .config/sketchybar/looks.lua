@@ -39,12 +39,24 @@ local schemes = {
 		bar_color = 0x40001f30,
 		accent_color = 0xfa001f30,
 		secondary_accent = 0xff397d89,
-		space_focused_window = 0xff2cf9ed, -- Cyan/Teal highlight
+		space_focused_window = 0xff8a1c7c, -- Magenta: the old cyan matched the cyan pill
 		disabled_color = 0xff397d89,
 		background = 0xff2cf9ed,
 		background_border = 0xfa001f30,
 		popup_background = 0xff2cf9ed,
 		popup_border = 0xfa001f30,
+		-- Under Liquid Glass the cyan pill drops to 25% and the dark
+		-- wallpaper shows through: navy text vanishes there, so the
+		-- glass pills take light text on a dark popup instead.
+		glass = {
+			text_color = 0xffe0fbf9,
+			accent_color = 0xff2cf9ed,
+			secondary_accent = 0xff7fc4cc,
+			disabled_color = 0xff7fc4cc,
+			space_focused_window = 0xffffb547,
+			popup_background = 0xff001f30,
+			popup_border = 0xff2cf9ed,
+		},
 	},
 	blacknwhite = {
 		font = "Helvetica Neue", -- words (numbers and icons stay Hack)
@@ -62,7 +74,7 @@ local schemes = {
 		font = "SF Pro Rounded", -- words (numbers and icons stay Hack)
 		bar_color = 0x70140c42,
 		accent_color = 0xffeb46f9,
-		secondary_accent = 0xffa569bd,
+		secondary_accent = 0xffbb8fce, -- light enough for the date on the dark pill
 		space_focused_window = 0xff00f3ff, -- Neon cyan highlight
 		disabled_color = 0xffb8a1d9,
 		background = 0xfa140c42,
@@ -74,7 +86,7 @@ local schemes = {
 		font = "Trebuchet MS", -- words (numbers and icons stay Hack)
 		bar_color = 0x7023090e,
 		accent_color = 0xffff2453,
-		secondary_accent = 0xffc0392b,
+		secondary_accent = 0xffff6b81, -- light enough for the date on the dark pill
 		space_focused_window = 0xfff7fc17, -- Neon yellow highlight
 		disabled_color = 0xffe1a2a6,
 		background = 0xfa23090e,
@@ -296,6 +308,9 @@ if kiwi_profile_values and kiwi_profile_values.liquid_glass then
 			scheme.glass_border = 0x40ffffff
 			scheme.background = with_alpha(scheme.background, math.min(alpha, 0x40))
 			scheme.background_border = 0x40ffffff
+			for key, value in pairs(scheme.glass or {}) do
+				scheme[key] = value
+			end
 		end
 	end
 end
