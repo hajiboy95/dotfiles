@@ -10,8 +10,8 @@
 	email = 89179997+hajiboy95@users.noreply.github.com
 	name = hajiboy95
 [credential "https://github.com"]
-	helper =
+	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
 [credential "https://gist.github.com"]
-	helper =
+	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
