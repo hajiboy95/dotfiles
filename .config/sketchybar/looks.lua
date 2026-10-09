@@ -1,4 +1,5 @@
--- The look: colours and fonts. Global LOOK (alias COLORS).
+-- The look: colours, plus the active look's font (helpers/shapes.lua
+-- owns fonts and shapes). Global LOOK (alias COLORS).
 local colors = {}
 local config_dir = os.getenv("CONFIG_DIR")
 local theme_file = config_dir .. "/helpers/active_theme.txt"
@@ -17,7 +18,6 @@ colors.charging = 0xffffd700
 local schemes = {
 	gruvbox = {
 		look = "retro", -- default look (helpers/shapes.lua): warm, print-era palette
-		font = "Charter", -- words (numbers and icons stay Hack)
 		bar_color = 0x70282828,
 		accent_color = 0xffd79921,
 		secondary_accent = 0xfffabd2f,
@@ -30,7 +30,6 @@ local schemes = {
 	},
 	teal = {
 		look = "glass", -- default look (helpers/shapes.lua): a cool hue that reads well under glass
-		font = "PT Sans",
 		swatch = 0xff2cf9ed, -- the picker's dot: its navy accent vanishes on a dark popup -- words (numbers and icons stay Hack)
 		-- Its accent (#001F30) vanishes on KiwiDesk's glass shelf:
 		-- KiwiDesk gets these instead there.
@@ -63,7 +62,6 @@ local schemes = {
 	},
 	blacknwhite = {
 		look = "tiler", -- default look (helpers/shapes.lua): monochrome wants hard edges
-		font = "Helvetica Neue", -- words (numbers and icons stay Hack)
 		bar_color = 0x40000000,
 		accent_color = 0xffffffff,
 		secondary_accent = 0xffa9cce3,
@@ -76,7 +74,6 @@ local schemes = {
 	},
 	purple = {
 		look = "neon", -- default look (helpers/shapes.lua): a saturated violet carries a bloom
-		font = "SF Pro Rounded", -- words (numbers and icons stay Hack)
 		bar_color = 0x70140c42,
 		accent_color = 0xffeb46f9,
 		secondary_accent = 0xffbb8fce, -- light enough for the date on the dark pill
@@ -89,7 +86,6 @@ local schemes = {
 	},
 	red = {
 		look = "tiler", -- default look (helpers/shapes.lua): a glowing red ring reads as an error
-		font = "Trebuchet MS", -- words (numbers and icons stay Hack)
 		bar_color = 0x7023090e,
 		accent_color = 0xffff2453,
 		secondary_accent = 0xffff6b81, -- light enough for the date on the dark pill
@@ -102,7 +98,6 @@ local schemes = {
 	},
 	blue = {
 		look = "glass", -- default look (helpers/shapes.lua): closest to native macOS
-		font = "Avenir Next", -- words (numbers and icons stay Hack)
 		bar_color = 0x70021254,
 		accent_color = 0xff15bdf9,
 		secondary_accent = 0xff5dade2,
@@ -115,7 +110,6 @@ local schemes = {
 	},
 	green = {
 		look = "strip", -- default look (helpers/shapes.lua): calm, native
-		font = "Gill Sans", -- words (numbers and icons stay Hack)
 		bar_color = 0x70003315,
 		accent_color = 0xff1dfca1,
 		secondary_accent = 0xff52be80,
@@ -128,7 +122,6 @@ local schemes = {
 	},
 	orange = {
 		look = "retro", -- default look (helpers/shapes.lua): warm, like gruvbox
-		font = "Proxima Nova", -- words (numbers and icons stay Hack)
 		bar_color = 0x70381c02,
 		accent_color = 0xfff97716,
 		secondary_accent = 0xffeb984e,
@@ -141,7 +134,6 @@ local schemes = {
 	},
 	yellow = {
 		look = "strip", -- default look (helpers/shapes.lua): a yellow glow smears on light wallpapers
-		font = "SF Compact Text", -- words (numbers and icons stay Hack)
 		bar_color = 0x702d2b02,
 		accent_color = 0xfff7fc17,
 		secondary_accent = 0xfff4d03f,
@@ -154,7 +146,6 @@ local schemes = {
 	},
 	liquid_glass = {
 		look = "glass", -- default look (helpers/shapes.lua): it is the glass colour
-		font = "SF Pro", -- words (numbers and icons stay Hack)
 		bar_color = 0x00000000,
 		-- Plain text white; "on" in True Dark's cyan, which reads on the
 		-- glass (4.7:1) and stays apart from the orange front-app
@@ -204,6 +195,14 @@ local style_paths = {
 	"kiwishelf.border_width",
 	"kiwishelf.highlight_width",
 	"kiwishelf.outer_margin",
+	"kiwishelf.inner_margin",
+	"kiwishelf.thickness",
+	"kiwishelf.item_gap",
+	"kiwishelf.glyph_size",
+	"kiwishelf.font_size",
+	"kiwishelf.font_family",
+	"kiwishelf.font_weight",
+	"space_bar.glyph_gap",
 	"gap.global.inner.horizontal",
 	"gap.global.inner.vertical",
 	"gap.global.outer.top",
@@ -325,7 +324,6 @@ if kiwi_profile_values then
 		label = "KiwiDesk",
 		look = "kiwidesk", -- the profile's own shape too
 		is_kiwidesk_profile = true,
-		font = kiwi_profile_values.font_family,
 		bar_color = fill,
 		-- Sketchybar draws text and icons in accent_color, so it takes
 		-- the shelf's text colours, not the (darker) ring purple.
@@ -399,6 +397,7 @@ function colors.resolve(name, look)
 		data.kiwi = nil
 	end
 	data.shape = shape.sb
+	data.font = shape.kiwi.font
 	data.look = look or colors.effective_look(name)
 	return data
 end
@@ -505,13 +504,10 @@ local function kiwi_shell(pairs_list)
 end
 
 function colors.kiwidesk_command(scheme)
-	-- The KiwiDesk scheme hands the profile's exact colours (and font)
-	-- back.
+	-- The KiwiDesk scheme hands the profile's exact colours back. Fonts
+	-- belong to the looks (helpers/shapes.lua).
 	if scheme.is_kiwidesk_profile then
 		local list = {}
-		if scheme.font then
-			table.insert(list, { "kiwishelf.set_font_family", scheme.font })
-		end
 		for _, entry in ipairs(kiwi_paths) do
 			local hex = kiwi_profile_values and kiwi_profile_values[entry[2]]
 			if hex then
@@ -521,9 +517,6 @@ function colors.kiwidesk_command(scheme)
 		return kiwi_shell(list)
 	end
 	local list = {}
-	if scheme.font then
-		table.insert(list, { "kiwishelf.set_font_family", scheme.font })
-	end
 	for _, entry in ipairs(kiwi_map) do
 		local source = entry[2]
 		local key, alpha = source, nil
@@ -574,7 +567,9 @@ local function style_of(family)
 	return style_cache[family]
 end
 
--- Sets the word font for the active scheme (called by colors.use).
+-- Sets the word font for the active look (called by colors.use); a
+-- family sketchybar cannot find (Tiler's "System Monospaced") wears
+-- Hack, monospaced too.
 function colors.resolve_font(family)
 	local style = family and style_of(family) or ""
 	if style ~= "" then

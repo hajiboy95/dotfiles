@@ -1,13 +1,11 @@
--- Looks: the shape half of a theme, apart from its colours. Each
--- colour scheme names a default look (looks.lua); a look picked in
--- the theme picker pins over it. A look writes EVERY key below, so
--- nothing of the previous one lingers (a colour-only palette that
--- bundled a glow could never switch it off again: KiwiDesk #578).
--- Never written: edges and thickness. Two keys move windows and are
--- set only by the look that wants them, every other look giving the
--- profile's own value back: the shelf's outer margin (Strip: 0,
--- flush with the screen edge and sketchybar's strip) and the layout
--- gaps (Tiler: just clear of the ring, as a classic tiler).
+-- Looks: everything of a theme but its colours (looks.lua holds those)
+-- — shape, size, gaps, font and Liquid Glass. Picking a look also
+-- wears its own palette; a colour picked afterwards changes colours
+-- only. A look writes EVERY key below, so nothing of the previous one
+-- lingers (a colour-only palette that bundled a glow could never
+-- switch it off again: KiwiDesk #578; its bundled looks are total
+-- the same way). Sizes follow KiwiDesk's bundled looks. Never
+-- written: edges.
 local M = {}
 
 M.order = { "glass", "strip", "tiler", "neon", "retro", "kiwidesk" }
@@ -50,6 +48,12 @@ M.labels = {
 M.presets = {
 	glass = {
 		kiwi = {
+			font = "SF Pro Rounded",
+			font_weight = 500,
+			thickness = 44,
+			outer_margin = 10,
+			gap = 16,
+			item_gap = 10,
 			style = "boxed",
 			fit = "hug",
 			roundness = 100,
@@ -69,6 +73,11 @@ M.presets = {
 	},
 	strip = {
 		kiwi = {
+			font = "SF Pro",
+			font_weight = 500,
+			thickness = 32, -- one band with sketchybar's 32 pt bar
+			gap = 8,
+			item_gap = 6,
 			style = "plain",
 			fit = "full",
 			roundness = 0, -- flush on the edge: no corners to round
@@ -89,6 +98,12 @@ M.presets = {
 	},
 	tiler = {
 		kiwi = {
+			font = "System Monospaced", -- sketchybar: Hack, monospaced too
+			font_weight = 500,
+			thickness = 30, -- level with sketchybar's 30 pt pills
+			outer_margin = 4,
+			gap = 4,
+			item_gap = 4,
 			style = "plain",
 			fit = "hug",
 			roundness = 0,
@@ -98,7 +113,6 @@ M.presets = {
 			glass = false,
 			ring = 4,
 			corners = "square",
-			fit_gaps = true, -- gaps = the ring's width, no whitespace
 			glow = false,
 			glow_size = 0,
 			sheen = 0,
@@ -109,6 +123,12 @@ M.presets = {
 	},
 	neon = {
 		kiwi = {
+			font = "Avenir Next",
+			font_weight = 500,
+			thickness = 40,
+			outer_margin = 8,
+			gap = 16, -- the glow's bloom needs the room
+			item_gap = 8,
 			style = "boxed",
 			fit = "hug",
 			roundness = 60,
@@ -128,6 +148,12 @@ M.presets = {
 	},
 	retro = {
 		kiwi = {
+			font = "Charter",
+			font_weight = 500,
+			thickness = 28, -- level with its 28 pt pills
+			outer_margin = 6,
+			gap = 8,
+			item_gap = 6,
 			style = "boxed",
 			fit = "hug",
 			roundness = 25,
@@ -148,7 +174,8 @@ M.presets = {
 }
 
 -- The profile's global gap when one number says it (the CLI's
--- set_gap_global takes a number); nil leaves gaps alone.
+-- set_gap_global takes a number); nil leaves gaps alone rather than
+-- flatten uneven ones.
 local gap_paths = {
 	"gap.global.inner.horizontal",
 	"gap.global.inner.vertical",
@@ -169,8 +196,8 @@ local function uniform_gap(style)
 	return value
 end
 
--- "KiwiDesk": the KiwiDesk profile's own shape (set by looks.lua from the
--- profile file; live CLI writes do not save into it) with the
+-- "KiwiDesk": the KiwiDesk profile's own look (set by looks.lua from
+-- the profile file; live CLI writes do not save into it) with the
 -- sketchybar pills of Glass.
 function M.set_own(style)
 	local s = style or {}
@@ -183,14 +210,22 @@ function M.set_own(style)
 	local glass = M.presets.glass.kiwi
 	M.presets.kiwidesk = {
 		kiwi = {
+			font = s["kiwishelf.font_family"],
+			font_weight = s["kiwishelf.font_weight"],
+			thickness = pick("kiwishelf.thickness", glass.thickness),
+			outer_margin = pick("kiwishelf.outer_margin", glass.outer_margin),
+			inner_margin = pick("kiwishelf.inner_margin", 0),
+			gap = uniform_gap(s),
+			item_gap = pick("kiwishelf.item_gap", glass.item_gap),
+			glyph_size = pick("kiwishelf.glyph_size", 0),
+			font_size = pick("kiwishelf.font_size", 0),
+			glyph_gap = pick("space_bar.glyph_gap", 0),
 			style = pick("kiwishelf.background_style", glass.style),
 			fit = pick("kiwishelf.background_fit", glass.fit),
 			roundness = pick("kiwishelf.corner_roundness", glass.roundness),
 			shelf_border = pick("kiwishelf.border", glass.shelf_border),
 			shelf_border_width = pick("kiwishelf.border_width", glass.shelf_border_width),
 			highlight = pick("kiwishelf.highlight_width", glass.highlight),
-			outer_margin = pick("kiwishelf.outer_margin", 10),
-			gap = uniform_gap(s),
 			glass = pick("kiwishelf.liquid_glass", glass.glass),
 			drag_glass = s["drag.liquid_glass"],
 			sticky_glass = s["sticky.liquid_glass"],
@@ -214,9 +249,19 @@ function M.get(name)
 	return M.presets[name] or M.presets.glass
 end
 
+-- The font sketchybar's words wear under a look.
+function M.font(name)
+	return M.get(name).kiwi.font
+end
+
+-- What KiwiDesk last got from us, per verb: an unchanged size or gap
+-- is not re-sent, as each one retiles every Space.
+local applied = {}
+
 -- One shell command setting KiwiDesk's whole look, each verb run even
--- if another is refused; silent and harmless without the CLI.
-function M.kiwidesk_command(name)
+-- if another is refused; silent and harmless without the CLI. `force`
+-- re-sends every verb (the active look picked again).
+function M.kiwidesk_command(name, force)
 	local k = M.get(name).kiwi
 	local function either(value, fallback)
 		if value == nil then
@@ -225,13 +270,18 @@ function M.kiwidesk_command(name)
 		return value
 	end
 	local verbs = {
+		{ "kiwishelf.set_font_family", k.font },
+		{ "kiwishelf.set_font_weight", k.font_weight },
 		{ "kiwishelf.set_background_style", k.style },
 		{ "kiwishelf.set_background_fit", k.fit },
 		{ "kiwishelf.set_corner_roundness", k.roundness },
 		{ "kiwishelf.set_border", k.shelf_border },
 		{ "kiwishelf.set_border_width", k.shelf_border_width },
 		{ "kiwishelf.set_highlight_width", k.highlight },
-		{ "kiwishelf.set_outer_margin", either(k.outer_margin, M.presets.kiwidesk.kiwi.outer_margin) },
+		{ "kiwishelf.set_item_gap", k.item_gap },
+		{ "kiwishelf.set_glyph_size", either(k.glyph_size, 0) },
+		{ "kiwishelf.set_font_size", either(k.font_size, 0) },
+		{ "space_bar.set_glyph_gap", either(k.glyph_gap, 0) },
 		-- Liquid Glass is one switch: every surface follows the shelf.
 		{ "kiwishelf.set_liquid_glass", k.glass },
 		{ "drag.set_liquid_glass", either(k.drag_glass, k.glass) },
@@ -246,16 +296,23 @@ function M.kiwidesk_command(name)
 		{ "space_bar.set_active_indicator", k.space_indicator },
 		{ "monocle.set_app_bar_active_indicator", either(k.monocle_indicator, k.app_indicator) },
 		{ "scroll.set_app_bar_active_indicator", either(k.scroll_indicator, k.app_indicator) },
+		-- Sizes last: each retiles.
+		{ "kiwishelf.set_thickness", k.thickness },
+		{ "kiwishelf.set_outer_margin", either(k.outer_margin, 0) },
+		{ "kiwishelf.set_inner_margin", either(k.inner_margin, 0) },
+		{ "set_gap_global", k.gap },
 	}
-	-- After the ring's verbs: fit_gaps measures the ring as now set.
-	if k.fit_gaps then
-		table.insert(verbs, { "border.fit_gaps", 0 })
-	elseif M.presets.kiwidesk.kiwi.gap then
-		table.insert(verbs, { "set_gap_global", M.presets.kiwidesk.kiwi.gap })
-	end
 	local parts = {}
 	for _, verb in ipairs(verbs) do
-		table.insert(parts, "kiwidesk " .. verb[1] .. " " .. tostring(verb[2]))
+		local value = verb[2]
+		if value ~= nil and (force or applied[verb[1]] ~= value) then
+			applied[verb[1]] = value
+			local arg = type(value) == "string" and "'" .. value:gsub("'", "") .. "'" or tostring(value)
+			table.insert(parts, "kiwidesk " .. verb[1] .. " " .. arg)
+		end
+	end
+	if #parts == 0 then
+		return "true"
 	end
 	return "{ command -v kiwidesk >/dev/null 2>&1 && " .. table.concat(parts, "; ") .. "; } >/dev/null 2>&1"
 end

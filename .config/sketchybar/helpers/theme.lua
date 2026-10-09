@@ -63,10 +63,7 @@ function M.apply_shape()
 	})
 end
 
--- KiwiDesk keeps its profile's look until one is PICKED; after that a
--- colour pick re-sends the look only when the effective one changed.
-local pushed_look = nil
-
+-- KiwiDesk keeps its profile's look until one is PICKED.
 local function render(name, push_look)
 	if not COLORS.use(name) then
 		return
@@ -103,9 +100,8 @@ local function render(name, push_look)
 	-- KiwiDesk follows in the background: the shape first, then the
 	-- colours (the glass tint depends on the look).
 	local command = COLORS.kiwidesk_command(COLORS)
-	if push_look or (pushed_look and pushed_look ~= COLORS.look) then
-		command = COLORS.shapes.kiwidesk_command(COLORS.look) .. "; " .. command
-		pushed_look = COLORS.look
+	if push_look then
+		command = COLORS.shapes.kiwidesk_command(COLORS.look, push_look == "force") .. "; " .. command
 	end
 	SBAR.exec(command)
 end
@@ -121,13 +117,16 @@ function M.apply_look(look)
 	if not COLORS.shapes.presets[look] then
 		return
 	end
+	-- The active look picked again re-sends all of it (e.g. after
+	-- KiwiDesk's own settings were changed).
+	local again = look == COLORS.look
 	COLORS.look_pin = look
 	local scheme = COLORS.active_scheme_name
 	local palette = COLORS.shapes.palettes[look]
 	if palette and COLORS.all_schemes[palette] then
 		scheme = palette
 	end
-	render(scheme, true)
+	render(scheme, again and "force" or true)
 end
 
 return M
