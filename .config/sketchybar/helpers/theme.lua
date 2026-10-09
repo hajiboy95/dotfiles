@@ -115,16 +115,22 @@ function M.apply(name)
 	render(name, false)
 end
 
--- Picks a look by name (pinned), or "auto" for the scheme's default.
+-- Picks a look by name (pinned) with its own palette, or "auto" for
+-- the current scheme's default look.
 function M.apply_look(look)
+	local scheme = COLORS.active_scheme_name
 	if look == "auto" then
 		COLORS.look_pin = nil
 	elseif COLORS.shapes.presets[look] then
 		COLORS.look_pin = look
+		local palette = COLORS.shapes.palettes[look]
+		if palette and COLORS.all_schemes[palette] then
+			scheme = palette
+		end
 	else
 		return
 	end
-	render(COLORS.active_scheme_name, true)
+	render(scheme, true)
 end
 
 return M

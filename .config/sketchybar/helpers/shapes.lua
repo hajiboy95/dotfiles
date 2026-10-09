@@ -23,6 +23,18 @@ M.glyphs = {
 	own = "󰋜",
 }
 
+-- Each look's own palette (looks.lua scheme), worn when the look is
+-- picked, as KiwiDesk's bundled looks name theirs. A colour picked
+-- afterwards changes the colours only.
+M.palettes = {
+	glass = "liquid_glass",
+	strip = "green",
+	tiler = "blacknwhite",
+	neon = "purple",
+	retro = "gruvbox",
+	own = "kiwidesk",
+}
+
 M.labels = {
 	glass = "Glass",
 	strip = "Strip",
