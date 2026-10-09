@@ -85,7 +85,7 @@ M.presets = {
 			shelf_border = false,
 			shelf_border_width = 1,
 			highlight = 2,
-			glass = true,
+			glass = false, -- one flat colour: sketchybar cannot draw real glass, so a glass band would not match
 			ring = 3,
 			corners = "rounded",
 			glow = false,
@@ -94,7 +94,7 @@ M.presets = {
 			app_indicator = "edge_mark",
 			space_indicator = "edge_mark",
 		},
-		sb = { radius = 0, border = 0, blur = 30, height = 30, popup_alpha = 0x99, strip = true },
+		sb = { radius = 0, border = 0, blur = 0, height = 30, popup_alpha = 0xe6, strip = true },
 	},
 	tiler = {
 		kiwi = {
