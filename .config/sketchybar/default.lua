@@ -63,6 +63,11 @@ SBAR.bar({
 	-- between them.
 	color = 0x00000000,
 	blur_radius = 0,
+	-- Above normal windows, so KiwiVision's dim plate (a normal-level
+	-- panel) passes under the bar: the pills stay bright and the
+	-- transparent gaps show the dimmed wallpaper, with no need to list
+	-- SketchyBar under Never dimmed (which cuts the whole bar rect).
+	topmost = "window",
 })
 
 
