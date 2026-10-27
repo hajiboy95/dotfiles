@@ -18,6 +18,9 @@ unfocused-split-opacity = 0.5
 
 # Colors
 theme = "Solarized Osaka Night"
+# The sketchybar theme picker writes this file (background, cursor,
+# selection) on every colour change; loaded last, so it wins.
+config-file = ?sketchybar-colors
 
 # Mouse
 mouse-hide-while-typing = true

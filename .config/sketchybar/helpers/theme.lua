@@ -72,6 +72,7 @@ local function render(name, push_look)
 	end
 	write(COLORS.theme_file, name)
 	write(COLORS.look_file, COLORS.look_pin)
+	write(COLORS.ghostty_file, COLORS.ghostty_config(COLORS))
 	-- Modules read their defaults from DEFAULT_ITEM: keep it current.
 	DEFAULT_ITEM.icon.color = COLORS.text_color
 	DEFAULT_ITEM.label.color = COLORS.text_color
@@ -101,8 +102,9 @@ local function render(name, push_look)
 	-- After the hooks: one recolouring a pill would turn it back on.
 	M.apply_shape()
 	-- KiwiDesk follows in the background: the shape first, then the
-	-- colours (the glass tint depends on the look).
-	local command = COLORS.kiwidesk_command(COLORS)
+	-- colours (the glass tint depends on the look). Ghostty reloads the
+	-- colours file written above.
+	local command = COLORS.kiwidesk_command(COLORS) .. "; " .. COLORS.ghostty_reload
 	if push_look then
 		command = COLORS.shapes.kiwidesk_command(COLORS.look, push_look == "force") .. "; " .. command
 	end

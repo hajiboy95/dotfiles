@@ -57,3 +57,10 @@ it protects against; most were learned by breaking it.
 - After load, prefer `SBAR.exec` (async) to `io.popen`: a blocking
   call freezes the bar while it runs. Cache what must stay sync
   (as `style_of` does).
+
+## Ghostty from the bar
+
+- Ghostty follows a theme pick through `~/.config/ghostty/sketchybar-colors`
+  (`ghostty_config` in `looks.lua`), which its config includes last,
+  then a `SIGUSR2` reload. Write colour only into that file, never
+  Ghostty's own config, and never start Ghostty from the bar.

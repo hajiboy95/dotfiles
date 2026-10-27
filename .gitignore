@@ -24,3 +24,5 @@
 # Picked theme state (sketchybar theme picker): per machine
 .config/sketchybar/helpers/active_theme.txt
 .config/sketchybar/helpers/active_look.txt
+# Ghostty colours written by the theme picker: per machine
+.config/ghostty/sketchybar-colors

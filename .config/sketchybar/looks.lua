@@ -542,6 +542,38 @@ function colors.kiwidesk_command(scheme)
 	return kiwi_shell(list)
 end
 
+-- Ghostty follows the picked scheme through an include its config
+-- loads last (`config-file = ?sketchybar-colors`); SIGUSR2 makes a
+-- running Ghostty reload it. Colour only: the Ghostty theme keeps its
+-- ANSI palette and text colour, Ghostty its own opacity and blur.
+colors.ghostty_file = os.getenv("HOME") .. "/.config/ghostty/sketchybar-colors"
+
+local function ghostty_hex(value)
+	return string.format("#%06x", value % 0x1000000)
+end
+
+function colors.ghostty_config(scheme)
+	-- bar_color is every scheme's dark tint (a pill can be bright, as
+	-- teal's cyan), so the theme's light text stays readable on it.
+	-- The cursor takes the KiwiDesk accent where a scheme has one: it
+	-- answers a dark ground (teal's navy accent vanishes there).
+	local raw = schemes[scheme.active_scheme_name] or {}
+	local accent = (raw.kiwi and raw.kiwi.accent_color) or scheme.accent_color
+	local ground = ghostty_hex(scheme.bar_color)
+	return table.concat({
+		"# Written by the sketchybar theme picker (looks.lua). Local, not in git.",
+		"background = " .. ground,
+		"cursor-color = " .. ghostty_hex(accent),
+		"cursor-text = " .. ground,
+		"selection-background = " .. ghostty_hex(accent),
+		"selection-foreground = " .. ground,
+		"split-divider-color = " .. ghostty_hex(accent),
+	}, "\n")
+end
+
+-- Reload only a running Ghostty; never start one.
+colors.ghostty_reload = "pkill -USR2 -x ghostty >/dev/null 2>&1; true"
+
 -- Fonts. Words (titles, names, menu rows) wear the KiwiDesk shelf's
 -- font so both bars share their handwriting; numbers and icons stay
 -- Hack Nerd Font, whose equal-width digits keep readouts from
