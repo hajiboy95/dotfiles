@@ -64,6 +64,7 @@ M.presets = {
 			shelf_border_width = 1,
 			highlight = 3,
 			glass = true,
+			fill_fade = 100, -- KiwiDesk's default: the fill fades to an eighth across the glass
 			ring = 5,
 			corners = "rounded",
 			glow = true,
@@ -91,6 +92,7 @@ M.presets = {
 			shelf_border_width = 1,
 			highlight = 2,
 			glass = false, -- sketchybar cannot draw real glass: both bars paint one flat tint instead
+			fill_fade = 100, -- no effect: glass is off
 			ring = 3,
 			corners = "rounded",
 			glow = false,
@@ -118,6 +120,7 @@ M.presets = {
 			shelf_border_width = 1,
 			highlight = 2,
 			glass = false,
+			fill_fade = 100, -- no effect: glass is off
 			ring = 4,
 			corners = "square",
 			glow = false,
@@ -145,6 +148,7 @@ M.presets = {
 			shelf_border_width = 2,
 			highlight = 4,
 			glass = false,
+			fill_fade = 100, -- no effect: glass is off
 			ring = 6,
 			corners = "rounded",
 			glow = true,
@@ -172,6 +176,7 @@ M.presets = {
 			shelf_border_width = 2,
 			highlight = 3,
 			glass = false,
+			fill_fade = 100, -- no effect: glass is off
 			ring = 3,
 			corners = "rounded",
 			glow = false,
@@ -240,6 +245,7 @@ function M.set_own(style)
 			shelf_border_width = pick("kiwishelf.border_width", glass.shelf_border_width),
 			highlight = pick("kiwishelf.highlight_width", glass.highlight),
 			glass = pick("kiwishelf.liquid_glass", glass.glass),
+			fill_fade = pick("kiwishelf.fill_fade", 100),
 			drag_glass = s["drag.liquid_glass"],
 			sticky_glass = s["sticky.liquid_glass"],
 			panel_glass = s["shortcut_panel.liquid_glass"],
@@ -304,6 +310,9 @@ function M.kiwidesk_command(name, force)
 		{ "drag.set_liquid_glass", either(k.drag_glass, k.glass) },
 		{ "sticky.set_liquid_glass", either(k.sticky_glass, k.glass) },
 		{ "set_shortcut_panel_liquid_glass", either(k.panel_glass, k.glass) },
+		-- How far the fill fades across the glass (0 even, 100 to an
+		-- eighth). Newer than KiwiDesk 3.2.0, which refuses it unheard.
+		{ "kiwishelf.set_fill_fade", k.fill_fade },
 		{ "border.set_width", k.ring },
 		{ "border.set_corner_style", k.corners },
 		{ "border.set_glow", k.glow },

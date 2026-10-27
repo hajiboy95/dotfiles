@@ -210,6 +210,7 @@ local style_paths = {
 	"gap.global.outer.left",
 	"gap.global.outer.right",
 	"kiwishelf.liquid_glass",
+	"kiwishelf.fill_fade",
 	"drag.liquid_glass",
 	"sticky.liquid_glass",
 	"shortcut_panel.liquid_glass",
