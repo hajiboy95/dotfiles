@@ -13,8 +13,12 @@ quick-terminal-size = 75%,60%
 # Window
 window-padding-x = 10
 window-padding-y = 10
-background-opacity = 0.9
 unfocused-split-opacity = 0.5
+# Liquid Glass (macOS 26+, Ghostty 1.4): clear glass needs opacity
+# below 1; the tab bar takes the same glass in the titlebar.
+background-opacity = 0.6
+background-blur = macos-glass-clear
+macos-titlebar-style = tabs
 
 # Colors
 theme = "Solarized Osaka Night"
