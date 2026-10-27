@@ -71,6 +71,8 @@ M.presets = {
 			sheen = 0.5,
 			app_indicator = "edge_mark",
 			space_indicator = "outline",
+			fade_duration = 300, -- KiwiDesk's own default: soft, native
+			fade_curve = "ease_out",
 		},
 		sb = { radius = 15, border = 1, blur = 60, height = 30, popup_alpha = 0x80 },
 	},
@@ -96,6 +98,8 @@ M.presets = {
 			sheen = 0.3,
 			app_indicator = "edge_mark",
 			space_indicator = "edge_mark",
+			fade_duration = 200, -- flat and flush: quick, still visible
+			fade_curve = "ease_out",
 		},
 		sb = { radius = 0, border = 0, blur = 30, height = 30, popup_alpha = 0x99, strip = true, tint = true },
 	},
@@ -121,6 +125,8 @@ M.presets = {
 			sheen = 0,
 			app_indicator = "edge_mark",
 			space_indicator = "edge_mark",
+			fade_duration = 0, -- keyboard-first: instant, as Reduce Motion (curve sent all the same)
+			fade_curve = "linear",
 		},
 		sb = { radius = 2, border = 1, blur = 0, height = 30, popup_alpha = 0xe6 },
 	},
@@ -146,6 +152,8 @@ M.presets = {
 			sheen = 0.2,
 			app_indicator = "outline",
 			space_indicator = "outline",
+			fade_duration = 500, -- the glow's afterglow: slow and rounded
+			fade_curve = "ease_in_out",
 		},
 		sb = { radius = 9, border = 2, blur = 20, height = 30, popup_alpha = 0xd9, accent_border = true },
 	},
@@ -171,6 +179,8 @@ M.presets = {
 			sheen = -0.3,
 			app_indicator = "outline",
 			space_indicator = "edge_mark",
+			fade_duration = 400, -- an even, CRT-like fade-down
+			fade_curve = "linear",
 		},
 		sb = { radius = 4, border = 2, blur = 0, height = 28, popup_alpha = 0xf2 },
 	},
@@ -242,6 +252,10 @@ function M.set_own(style)
 			space_indicator = pick("space_bar.active_indicator", glass.space_indicator),
 			monocle_indicator = s["monocle.app_bar_active_indicator"],
 			scroll_indicator = s["scroll.app_bar_active_indicator"],
+			-- KiwiVision is app-wide (gui.json, not the profile): fall back
+			-- to KiwiDesk's own defaults, not Glass's.
+			fade_duration = pick("kiwivision.fade_duration", 300),
+			fade_curve = pick("kiwivision.fade_curve", "ease_out"),
 		},
 		sb = M.presets.glass.sb,
 	}
@@ -299,6 +313,10 @@ function M.kiwidesk_command(name, force)
 		{ "space_bar.set_active_indicator", k.space_indicator },
 		{ "monocle.set_app_bar_active_indicator", either(k.monocle_indicator, k.app_indicator) },
 		{ "scroll.set_app_bar_active_indicator", either(k.scroll_indicator, k.app_indicator) },
+		-- KiwiVision's unfocus fade: no retile, safe on every pick. A lens
+		-- with a fade of its own still wins while it is on.
+		{ "kiwivision.set_fade_duration", k.fade_duration },
+		{ "kiwivision.set_fade_curve", k.fade_curve },
 		-- Sizes last: each retiles.
 		{ "kiwishelf.set_thickness", k.thickness },
 		{ "kiwishelf.set_outer_margin", either(k.outer_margin, 0) },
