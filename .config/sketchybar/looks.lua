@@ -223,8 +223,6 @@ local style_paths = {
 	"space_bar.active_indicator",
 	"monocle.app_bar_active_indicator",
 	"scroll.app_bar_active_indicator",
-	"kiwivision.fade_duration",
-	"kiwivision.fade_curve",
 }
 
 -- Reads every path above; returns { [path] = "#hex" } or nil.
@@ -250,12 +248,6 @@ def load(path):
         return {}
 sources = [load(os.path.join(base, "profiles", name + ".json")),
            load(os.path.join(base, "gui.json"))]
-# App-wide settings (KiwiVision) sit at gui.json's top level.
-try:
-    with open(os.path.join(base, "gui.json")) as f:
-        sources.append(json.load(f))
-except Exception:
-    pass
 for path in sys.argv[1].split():
     for src in sources:
         node = src
