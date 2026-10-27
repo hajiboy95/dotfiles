@@ -65,6 +65,20 @@ function M.apply_shape()
 	})
 end
 
+-- Ghostty wears the active scheme from the bar's start, unlike
+-- KiwiDesk: the colours file is ours, not the user's profile, so
+-- writing it at load overrides nothing they chose (init.lua). With
+-- follow_ghostty off the file goes, and Ghostty reloads only if one
+-- was there.
+function M.sync_ghostty()
+	if COLORS.follow_ghostty then
+		write(COLORS.ghostty_file, COLORS.ghostty_config(COLORS))
+	elseif not os.remove(COLORS.ghostty_file) then
+		return
+	end
+	SBAR.exec(COLORS.ghostty_reload)
+end
+
 -- KiwiDesk keeps its profile's look until one is PICKED.
 local function render(name, push_look)
 	if not COLORS.use(name) then
@@ -72,7 +86,9 @@ local function render(name, push_look)
 	end
 	write(COLORS.theme_file, name)
 	write(COLORS.look_file, COLORS.look_pin)
-	write(COLORS.ghostty_file, COLORS.ghostty_config(COLORS))
+	if COLORS.follow_ghostty then
+		write(COLORS.ghostty_file, COLORS.ghostty_config(COLORS))
+	end
 	-- Modules read their defaults from DEFAULT_ITEM: keep it current.
 	DEFAULT_ITEM.icon.color = COLORS.text_color
 	DEFAULT_ITEM.label.color = COLORS.text_color
@@ -104,7 +120,10 @@ local function render(name, push_look)
 	-- KiwiDesk follows in the background: the shape first, then the
 	-- colours (the glass tint depends on the look). Ghostty reloads the
 	-- colours file written above.
-	local command = COLORS.kiwidesk_command(COLORS) .. "; " .. COLORS.ghostty_reload
+	local command = COLORS.kiwidesk_command(COLORS)
+	if COLORS.follow_ghostty then
+		command = command .. "; " .. COLORS.ghostty_reload
+	end
 	if push_look then
 		command = COLORS.shapes.kiwidesk_command(COLORS.look, push_look == "force") .. "; " .. command
 	end

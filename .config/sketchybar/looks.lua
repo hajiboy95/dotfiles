@@ -546,6 +546,9 @@ end
 -- loads last (`config-file = ?sketchybar-colors`); SIGUSR2 makes a
 -- running Ghostty reload it. Colour only: the Ghostty theme keeps its
 -- ANSI palette and text colour, Ghostty its own opacity and blur.
+-- The one switch: false leaves Ghostty alone (the bar then removes its
+-- colours file at start, so Ghostty wears its own theme again).
+colors.follow_ghostty = true
 colors.ghostty_file = os.getenv("HOME") .. "/.config/ghostty/sketchybar-colors"
 
 local function ghostty_hex(value)

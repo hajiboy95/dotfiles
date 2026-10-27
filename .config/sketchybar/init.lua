@@ -50,6 +50,8 @@ require("items.resources")
 -- 4. Finalize
 -- The active look's pill shape (or strip), now that the pills exist.
 THEME.apply_shape()
+-- Ghostty follows the active scheme from the start, not only on a pick.
+THEME.sync_ghostty()
 SBAR.end_config()
 
 SBAR.event_loop() -- This keeps the lua process alive

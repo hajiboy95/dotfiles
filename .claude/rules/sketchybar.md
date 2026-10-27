@@ -64,3 +64,5 @@ it protects against; most were learned by breaking it.
   (`ghostty_config` in `looks.lua`), which its config includes last,
   then a `SIGUSR2` reload. Write colour only into that file, never
   Ghostty's own config, and never start Ghostty from the bar.
+- Gate every Ghostty write and reload on `follow_ghostty`
+  (`looks.lua`); off means the bar removes its file and stays out.
