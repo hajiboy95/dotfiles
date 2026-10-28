@@ -11,7 +11,7 @@ window-padding-x = 10
 window-padding-y = 10
 unfocused-split-opacity = 0.5
 # Liquid Glass: clear glass shows only below full opacity.
-background-opacity = 0.7
+background-opacity = 0.8
 background-blur = macos-glass-clear
 macos-titlebar-style = tabs
 
