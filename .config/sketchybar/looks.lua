@@ -232,8 +232,12 @@ local style_paths = {
 	"border.sheen",
 	"app_bar.active_indicator",
 	"space_bar.active_indicator",
-	"monocle.app_bar_active_indicator",
-	"scroll.app_bar_active_indicator",
+	"kiwishelf.alignment",
+	"kiwishelf.order",
+	"kiwishelf.icon_source",
+	"kiwishelf.dim_factor",
+	"space_bar.active_dim_factor",
+	"kiwishelf.tint_hub_and_plates",
 }
 
 -- Reads every path above; returns { [path] = "#hex" } or nil. An
