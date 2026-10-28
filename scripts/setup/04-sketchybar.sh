@@ -50,19 +50,20 @@ else
 fi
 # ==============================================================
 
-echo "🔐 Making scripts in ~/.config/sketchybar executable..."
-find "$HOME/.config/sketchybar" -type f -name "*.sh" -exec chmod +x {} \;
+# The repo copy, not ~/.config: on a fresh Mac stow (06) has not linked it yet,
+# and find on a missing path would abort setup under set -e.
+echo "🔐 Making sketchybar scripts executable..."
+find "$DOTFILES_DIR/.config/sketchybar" -type f -name "*.sh" -exec chmod +x {} \;
 
 # ==================== KIWIDESK BINARY ====================
 # The spaces widget resolves the binary from KIWIDESK_BIN, then
-# ~/.local/bin/kiwidesk, then the Homebrew prefixes. Until the cask ships,
-# a dev build has to be linked into ~/.local/bin by hand:
+# ~/.local/bin/kiwidesk, then the Homebrew prefixes. The Brewfile's cask
+# installs it; a dev build can still be linked into ~/.local/bin:
 #   ln -sfn /path/to/KiwiDesk/.build/release/KiwiDesk ~/.local/bin/kiwidesk
 if [ -x "$HOME/.local/bin/kiwidesk" ] || command -v kiwidesk &>/dev/null; then
   echo "✔️ KiwiDesk binary found."
 else
   echo "⚠️ No kiwidesk binary on this machine. The sketchybar spaces widget"
-  echo "   will draw empty until one is linked into ~/.local/bin."
+  echo "   will draw empty until the KiwiDesk cask is installed."
 fi
-# ==============================================================
 # ==============================================================
