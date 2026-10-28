@@ -27,10 +27,11 @@ local schemes = {
 		background_border = 0xff45475a,
 		popup_background = 0xff282828,
 		popup_border = 0xffd79921,
+		pocket_color = 0xff83a598, -- its aqua: the yellow accent sits too near the kiwis' green for red-green vision
 	},
 	teal = {
 		look = "glass", -- default look (helpers/shapes.lua): a cool hue that reads well under glass
-		swatch = 0xff2cf9ed, -- the picker's dot: its navy accent vanishes on a dark popup -- words (numbers and icons stay Hack)
+		swatch = 0xff2cf9ed, -- the picker's dot: its navy accent vanishes on a dark popup
 		-- Its accent (#001F30) vanishes on KiwiDesk's glass shelf:
 		-- KiwiDesk gets these instead there.
 		kiwi = {
@@ -47,6 +48,7 @@ local schemes = {
 		background_border = 0xfa001f30,
 		popup_background = 0xff2cf9ed,
 		popup_border = 0xfa001f30,
+		pocket_color = 0xff2cf9ed, -- its cyan: the navy accent vanishes on the dark plate
 		-- Under Liquid Glass the cyan pill drops to 25% and the dark
 		-- wallpaper shows through: navy text vanishes there, so the
 		-- glass pills take light text on a dark popup instead.
@@ -71,6 +73,7 @@ local schemes = {
 		background_border = 0xffffffff,
 		popup_background = 0xff101314,
 		popup_border = 0xffffffff,
+		pocket_color = 0xff00d2ff, -- its blue: white is Automatic's own ink
 	},
 	purple = {
 		look = "neon", -- default look (helpers/shapes.lua): a saturated violet carries a bloom
@@ -83,6 +86,7 @@ local schemes = {
 		background_border = 0xff2e2a5a,
 		popup_background = 0xff140c42,
 		popup_border = 0xffeb46f9,
+		pocket_color = 0xffeb46f9,
 	},
 	red = {
 		look = "tiler", -- default look (helpers/shapes.lua): a glowing red ring reads as an error
@@ -95,6 +99,7 @@ local schemes = {
 		background_border = 0xff3c1a22,
 		popup_background = 0xff23090e,
 		popup_border = 0xffff2453,
+		pocket_color = 0xffff2453,
 	},
 	blue = {
 		look = "glass", -- default look (helpers/shapes.lua): closest to native macOS
@@ -107,6 +112,7 @@ local schemes = {
 		background_border = 0xff223973,
 		popup_background = 0xff021254,
 		popup_border = 0xff15bdf9,
+		pocket_color = 0xff15bdf9,
 	},
 	green = {
 		look = "strip", -- default look (helpers/shapes.lua): calm, native
@@ -119,6 +125,7 @@ local schemes = {
 		background_border = 0xff0f4d2b,
 		popup_background = 0xff003315,
 		popup_border = 0xff1dfca1,
+		pocket_color = 0xff15bdf9, -- its blue: a mint pocket hides the green kiwis
 	},
 	orange = {
 		look = "retro", -- default look (helpers/shapes.lua): warm, like gruvbox
@@ -131,6 +138,7 @@ local schemes = {
 		background_border = 0xff4f2e11,
 		popup_background = 0xff381c02,
 		popup_border = 0xfff97716,
+		pocket_color = 0xfff97716,
 	},
 	yellow = {
 		look = "strip", -- default look (helpers/shapes.lua): a yellow glow smears on light wallpapers
@@ -143,6 +151,7 @@ local schemes = {
 		background_border = 0xff4e4b13,
 		popup_background = 0xff2d2b02,
 		popup_border = 0xfff7fc17,
+		pocket_color = 0xfff7fc17,
 	},
 	liquid_glass = {
 		look = "glass", -- default look (helpers/shapes.lua): it is the glass colour
@@ -159,6 +168,7 @@ local schemes = {
 		background_border = 0x40ffffff,
 		popup_background = 0xee1a1d1e,
 		popup_border = 0x80ffffff,
+		pocket_color = 0xff64d2ff,
 	},
 }
 
@@ -184,6 +194,7 @@ local kiwi_paths = {
 	{ "drag.set_ghost_fill_color", "drag.ghost.fill_color" },
 	{ "drag.set_drop_zone_border_color", "drag.drop_zone.border_color" },
 	{ "drag.set_drop_zone_fill_color", "drag.drop_zone.fill_color" },
+	{ "pocket.set_color", "pocket.color" },
 }
 
 -- Shape keys the "KiwiDesk" look restores (helpers/shapes.lua).
@@ -225,13 +236,20 @@ local style_paths = {
 	"scroll.app_bar_active_indicator",
 }
 
--- Reads every path above; returns { [path] = "#hex" } or nil.
+-- Reads every path above; returns { [path] = "#hex" } or nil. An
+-- empty colour is Automatic and reads back as "", so picking the
+-- KiwiDesk scheme hands Automatic back too.
 local function read_kiwidesk_profile()
 	local wanted = {}
 	for _, entry in ipairs(kiwi_paths) do
 		table.insert(wanted, entry[2])
 	end
-	local handle = io.popen([[python3 - ']] .. table.concat(wanted, " ") .. [[' ']] .. table.concat(style_paths, " ") .. [[' 2>/dev/null <<'PY'
+	local handle = io.popen(
+		[[python3 - ']]
+			.. table.concat(wanted, " ")
+			.. [[' ']]
+			.. table.concat(style_paths, " ")
+			.. [[' 2>/dev/null <<'PY'
 import json, os, subprocess, sys
 base = os.path.expanduser("~/.config/KiwiDesk")
 try:
@@ -256,6 +274,9 @@ for path in sys.argv[1].split():
         if isinstance(node, str) and node.startswith("#"):
             print(path + "=" + node)
             break
+        if node == "":
+            print("auto:" + path)
+            break
 glass = None
 for src in sources:
     value = (src.get("kiwishelf") or {}).get("liquid_glass")
@@ -277,7 +298,8 @@ for src in sources:
     if isinstance(family, str) and family:
         print("font_family=" + family)
         break
-PY]])
+PY]]
+	)
 	if not handle then
 		return nil
 	end
@@ -286,6 +308,9 @@ PY]])
 	local values = {}
 	for path, hex in out:gmatch("([%w%._]+)=(#%x+)") do
 		values[path] = hex
+	end
+	for path in out:gmatch("auto:([%w%._]+)") do
+		values[path] = ""
 	end
 	values.liquid_glass = out:match("liquid_glass=on") ~= nil
 	values.font_family = out:match("font_family=([^\n]+)")
@@ -318,7 +343,7 @@ local kiwi_profile_values = read_kiwidesk_profile()
 if kiwi_profile_values then
 	local v = function(path, fallback)
 		local hex = kiwi_profile_values[path]
-		return hex and argb(hex) or fallback
+		return hex and hex ~= "" and argb(hex) or fallback
 	end
 	local fill = v("kiwishelf.fill_color", 0xb31a1a2e)
 	schemes.kiwidesk = {
@@ -485,6 +510,9 @@ local kiwi_map = {
 	{ "drag.set_ghost_fill_color", { "accent_color", 0x40 } },
 	{ "drag.set_drop_zone_border_color", "space_focused_window" },
 	{ "drag.set_drop_zone_fill_color", { "space_focused_window", 0x26 } },
+	-- The pocket mark: one of the scheme's own accents, picked to clear
+	-- KiwiDesk's red-green separation floor against the kiwis' green.
+	{ "pocket.set_color", "pocket_color" },
 }
 
 -- 0xAARRGGBB -> "#RRGGBBAA"
