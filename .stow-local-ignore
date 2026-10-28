@@ -29,9 +29,7 @@
 
 # Local setup scripts
 setup\.sh$
-setup_shared_brew\.sh$
 RectangleConfig\.json$
-.aerospace_rectangle\.toml$
 Brewfile$
 
 # Repo-only payload: these belong to the repo, not to $HOME
