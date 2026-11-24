@@ -118,7 +118,7 @@ Space Bar and App Bar, styled to match SketchyBar.
 the repo root:
 
 ```bash
-brew bundle dump --describe --force
+brew bundle dump --force
 ```
 
 **The SketchyBar app font icon map.** Now and then, grab the latest
