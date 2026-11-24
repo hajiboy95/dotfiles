@@ -76,6 +76,13 @@ local has_data = false
 local workspace_names = { "1", "2", "3", "4", "􀖇", "􀫀" }
 local current_focused_workspace = "1"
 local is_app_focused = false
+-- Spaces on show on some screen (every screen's, not only the
+-- focused one), so hover and the fade keep them bright.
+local shown_workspaces = {}
+
+local function is_on_show(workspace_id)
+	return workspace_id == current_focused_workspace or shown_workspaces[workspace_id] == true
+end
 
 -- ==========================================================
 -- INITIALIZE SPACES VISUALLY
@@ -108,8 +115,7 @@ for _, workspace_id in ipairs(workspace_names) do
 			return
 		end
 		local is_entering = (env.SENDER == "mouse.entered")
-		local is_this_focused = (workspace_id == current_focused_workspace)
-		if not is_this_focused then
+		if not is_on_show(workspace_id) then
 			local color = is_entering and COLORS.accent_color or COLORS.disabled_color
 			space:set({
 				icon = { color = color },
@@ -202,18 +208,108 @@ THEME.on_change(function()
 end)
 
 -- ==========================================================
+-- SCREENS & AREAS
+-- Each Space draws on its own screen's bar; on a screen split
+-- into areas, each area's Spaces sit together, in the areas'
+-- order across the screen, with a gap between areas.
+-- ==========================================================
+local SKETCHYBAR = "/opt/homebrew/bin/sketchybar"
+-- The Space item's own padding_left (default.lua sets none on
+-- the item); the area gap replaces it.
+local SPACE_PADDING = 0
+local AREA_GAP = 12
+local last_order = ""
+
+-- KiwiDesk's `display` is the list_monitors id, the same number
+-- SketchyBar reports as DirectDisplayID; an item's `display`
+-- takes SketchyBar's arrangement-id. Rebuilt on every update,
+-- since a screen's id changes when it reconnects.
+local function arrangement_ids()
+	local ids = {}
+	for _, d in ipairs(SBAR.query("displays")) do
+		ids[d.DirectDisplayID] = d["arrangement-id"]
+	end
+	return ids
+end
+
+-- Orders the items by screen, then area, then workspace_names,
+-- and moves them only when that grouping changes.
+local function group_by_area(spaces, arrangement)
+	local order = {}
+	for i, key in ipairs(workspace_names) do
+		local w = spaces[key]
+		order[i] = {
+			key = key,
+			index = i,
+			-- A Space on no screen goes last.
+			screen = (w and arrangement[w.display]) or math.huge,
+			area = (w and w.area) or 0,
+		}
+	end
+	table.sort(order, function(a, b)
+		if a.screen ~= b.screen then
+			return a.screen < b.screen
+		end
+		if a.area ~= b.area then
+			return a.area < b.area
+		end
+		return a.index < b.index
+	end)
+
+	local names, gaps = {}, {}
+	for i, s in ipairs(order) do
+		local prev = order[i - 1]
+		local new_area = prev ~= nil and prev.screen == s.screen and prev.area ~= s.area
+		gaps[i] = new_area and "|" or ""
+		table.insert(names, spaces_store[s.key].item.name)
+		for _, win_item in ipairs(spaces_store[s.key].win_items) do
+			table.insert(names, win_item.name)
+		end
+	end
+	-- The separator and front app stay after the Spaces.
+	table.insert(names, "space_separator")
+	table.insert(names, "front_app")
+
+	local joined = table.concat(names, " ")
+	local grouping = joined .. table.concat(gaps, ",")
+	if grouping == last_order then
+		return
+	end
+	for i, s in ipairs(order) do
+		spaces_store[s.key].item:set({
+			padding_left = SPACE_PADDING + (gaps[i] ~= "" and AREA_GAP or 0),
+		})
+	end
+	-- Remembered only once the reorder ran, so a failed one retries.
+	if os.execute(SKETCHYBAR .. " --reorder " .. joined) then
+		last_order = grouping
+	end
+end
+
+-- ==========================================================
 -- CONNECTION & UPDATE MANAGEMENT
 -- ==========================================================
 local function update_spaces()
 	kd_log("update_spaces BEGIN (io.popen get_state)")
 	local t0 = os.clock()
+	-- list_monitors gives each split screen's areas; the filter
+	-- writes a Space's area as its place on its screen (0 for the
+	-- left or top area, and on a screen that is not split).
 	local handle = io.popen(
 		kiwidesk_cmd("get_state")
 			.. " 2>/dev/null | "
 			.. JQ
-			.. " -r "
-			.. '\'.active_space, "---SPACES---", '
+			.. ' -r --arg mon "$('
+			.. kiwidesk_cmd("list_monitors")
+			.. ' 2>/dev/null)" '
+			.. "'(($mon | fromjson? // []) "
+			.. "| map((.areas // []) | sort_by(.y, .x)"
+			.. " | to_entries | map({key: .value.key, value: .key}))"
+			.. " | add // [] | from_entries) as $place"
+			.. ' | .active_space, "---SPACES---", '
 			.. '(.spaces[] | "\\(.id):\\(.focused):'
+			.. "\\(.shown):\\(.display):"
+			.. '\\($place[.area // ""] // 0):'
 			.. '\\(.windows | join(","))"), '
 			.. '"---WINDOWS---", '
 			.. '(.windows[] | "\\(.id):\\(.app):'
@@ -244,7 +340,8 @@ local function update_spaces()
 	local spaces = {}
 	line = handle:read("*l")
 	while line and line ~= "---WINDOWS---" do
-		local id, focused_win, windows_str = line:match("([^:]+):([^:]*):(.*)")
+		local id, focused_win, shown, display, area, windows_str =
+			line:match("([^:]+):([^:]*):(%a+):([^:]*):(%d+):(.*)")
 		if id then
 			local window_ids = {}
 			if windows_str and windows_str ~= "" then
@@ -254,6 +351,9 @@ local function update_spaces()
 			end
 			spaces[id] = {
 				focused = tonumber(focused_win),
+				shown = (shown == "true"),
+				display = tonumber(display),
+				area = tonumber(area),
 				windows = window_ids,
 			}
 		end
@@ -287,16 +387,25 @@ local function update_spaces()
 
 	current_focused_workspace = active_space
 	local active_app_name = nil
+	local arrangement = arrangement_ids()
 
 	for _, ws_name in ipairs(workspace_names) do
 		local w = spaces[ws_name]
 		local is_focused = (ws_name == active_space)
+		shown_workspaces[ws_name] = (w ~= nil and w.shown)
+		local on_show = is_on_show(ws_name)
+		-- A Space on no screen draws on the focused screen.
+		local where = (w and arrangement[w.display]) or "active"
 		local space_data = spaces_store[ws_name]
 
 		if space_data then
 			space_data.item:set({
-				icon = { color = is_focused and COLORS.accent_color or COLORS.disabled_color },
+				display = where,
+				icon = { color = on_show and COLORS.accent_color or COLORS.disabled_color },
 			})
+			for _, win_item in ipairs(space_data.win_items) do
+				win_item:set({ display = where })
+			end
 
 			local win_count = 0
 			if w and w.windows and #w.windows > 0 then
@@ -308,12 +417,10 @@ local function update_spaces()
 						local icon = icon_map[win.app] or icon_map["Default"] or ":default:"
 
 						local icon_color
-						if is_focused then
-							if w.focused == win_id then
-								icon_color = COLORS.space_focused_window or COLORS.secondary_accent or 0xff4E9F3D
-							else
-								icon_color = COLORS.accent_color
-							end
+						if is_focused and w.focused == win_id then
+							icon_color = COLORS.space_focused_window or COLORS.secondary_accent or 0xff4E9F3D
+						elseif on_show then
+							icon_color = COLORS.accent_color
 						else
 							icon_color = COLORS.disabled_color
 						end
@@ -338,6 +445,8 @@ local function update_spaces()
 			end
 		end
 	end
+
+	group_by_area(spaces, arrangement)
 
 	-- Update front focused app
 	is_app_focused = (active_app_name and active_app_name ~= "")
@@ -395,11 +504,10 @@ SBAR.add("event", "fade_out_spaces")
 
 swap_manager:subscribe("fade_in_spaces", function()
 	local handle = io.popen(kiwidesk_cmd("get_state") .. " 2>/dev/null | " .. JQ .. " -r '.active_space' 2>/dev/null")
-	local focused_name = "1"
 	if handle then
 		local active = handle:read("*l")
 		if active and active ~= "" then
-			focused_name = active
+			current_focused_workspace = active
 		end
 		handle:close()
 	end
@@ -420,7 +528,7 @@ swap_manager:subscribe("fade_in_spaces", function()
 		spaces_bracket:set({ background = { drawing = true } })
 
 		for id, data in pairs(spaces_store) do
-			local color = (id == focused_name) and COLORS.accent_color or COLORS.disabled_color
+			local color = is_on_show(id) and COLORS.accent_color or COLORS.disabled_color
 			data.item:set({ width = "dynamic", icon = { color = color }, label = { color = color } })
 			for _, win_item in ipairs(data.win_items) do
 				win_item:set({ width = "dynamic" })
