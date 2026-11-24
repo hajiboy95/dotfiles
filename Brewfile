@@ -1,6 +1,5 @@
 tap "anomalyco/tap", trusted: true
 tap "felixkratz/formulae", "https://github.com/FelixKratz/homebrew-formulae"
-tap "kiwicanopy/tap"
 tap "stripe/stripe-cli", trusted: true
 # Bourne-Again SHell, a UNIX command interpreter
 brew "bash"
@@ -24,6 +23,8 @@ brew "fortune"
 brew "fzf"
 # GitHub command-line tool
 brew "gh"
+# Quickly rewrite git repository history
+brew "git-filter-repo"
 # Audit git repos for secrets
 brew "gitleaks"
 # Tool to report network interface bandwidth
@@ -52,10 +53,6 @@ brew "pnpm"
 brew "poppler"
 # Framework for managing multi-language pre-commit hooks
 brew "pre-commit"
-# Python interface to Tcl/Tk
-brew "python-tk@3.11"
-# Interpreted, interactive, object-oriented programming language
-brew "python@3.10"
 # Interpreted, interactive, object-oriented programming language
 brew "python@3.12"
 # Interpreted, interactive, object-oriented programming language
@@ -91,14 +88,16 @@ cask "antigravity"
 # Display management tool
 cask "betterdisplay"
 # Terminal-based AI coding assistant
-cask "claude-code@latest"
+cask "claude-code"
+# App to build and share containerised applications and microservices
+cask "docker-desktop"
 cask "font-sketchybar-app-font"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
 # Keyboard and mouse input visualizer
 cask "keyty"
-# Tiling window manager with layouts, profiles, and Lua
-cask "kiwicanopy/tap/kiwidesk", trusted: true
+# Tiling window manager
+cask "kiwidesk"
 # Full TeX Live distribution with GUI applications
 cask "mactex"
 # Knowledge base that works on top of a local folder of plain text Markdown files
